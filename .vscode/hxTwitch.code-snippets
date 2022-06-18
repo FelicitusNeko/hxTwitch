@@ -1,0 +1,47 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"TwitchAPIEndpoint": {
+		"prefix": "twitchapi",
+		"scope": "haxe",
+		"body": [
+			"import haxe.http.HttpMethod",
+			"import twitch.api.APICall.APIResponse;",
+			"",
+			"typedef $1Query = {",
+			"}",
+			"",
+			"typedef $1Request = {",
+			"}",
+			"",
+			"typedef $1Response = Array<{",
+			"}>",
+			"",
+			"class $1 extends APICall {",
+			"  static var scopeRequired = \"$2\";",
+			"  static var oauthRequired = $3;",
+			"  static var method = HttpMethod.$4;",
+			"  static var endpoint = \"$5\";",
+			"",
+			"  public static function call(client:Client, query:$1Query, request:$1Request):APIResponse<$1Response> {",
+			"    return APICall.call(client, query, request);",
+			"  }",
+			"}"
+		],
+		"description": "Create a new Twitch API endpoint"
+	}
+}

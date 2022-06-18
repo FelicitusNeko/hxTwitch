@@ -1,0 +1,12 @@
+{
+  "name": "hxTwitch",
+  "url": "https://github.com/FelicitusNeko/hxTwitch/",
+  "license": "MIT",
+  "tags": ["twitch", "api", "pubsub"],
+  "description": "Haxe-based API and PubSub client for Twitch",
+  "version": "0.0.1",
+  "releasenote": "Initial release",
+  "contributors": ["FelicitusNeko"],
+  "dependencies": {},
+  "classPath": "src"
+}
