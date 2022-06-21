@@ -1,0 +1,29 @@
+package twitch.api.games;
+
+import haxe.http.HttpMethod;
+import twitch.api.APIEndpoint;
+
+typedef GetGamesQuery = {
+  var ?id:String;
+  var ?name:String;
+}
+
+typedef GetGamesRequest = {
+}
+
+typedef GetGamesResponse = Array<{
+  var id:String;
+  var name:String;
+  var box_art_url:String;
+}>
+
+class GetGames extends APIEndpoint {
+  static var scopeRequired = "";
+  static var oauthRequired = true;
+  static var method = HttpMethod.Get;
+  static var endpoint = "games";
+
+  public static function call(client:Client, query:GetGamesQuery):APIResponse<GetGamesResponse> {
+    return APIEndpoint.call(method, endpoint, client, query);
+  }
+}
