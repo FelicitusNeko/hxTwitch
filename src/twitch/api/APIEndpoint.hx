@@ -22,19 +22,19 @@ typedef APIResponse<R> = {
 
 @:abstract
 @:noCompletion
-abstract class APICall {
+abstract class APIEndpoint {
 	public static var scopeRequired:Null<String>;
 	public static var oauthRequired:Bool;
 	public static var method:HttpMethod;
 	public static var endpoint:String;
 
 	@:generic
-	public static function call<Q:Map<String, Dynamic>, B, R>(client:Client, ?query:Q, ?data:B):APIResponse<R> {
+	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Map<String, Dynamic>, ?data:Dynamic):APIResponse<R> {
 		var retval:APIResponse<R> = {
 			code: 0
 		};
 
-    client.call(method, endpoint, query, data != null ? Json.stringify(data) : null);
+		client.call(method, endpoint, query, data != null ? Json.stringify(data) : null);
 
 		return retval;
 	}

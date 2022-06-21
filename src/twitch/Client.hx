@@ -26,7 +26,7 @@ class Client {
 			req.setPostData(data);
 		}
 
-		req.customRequest(method != Get, retval, null, method);
+		//req.customRequest(method != Get, retval, null, method);
 
 		return retval.getBytes().toString();
 	}

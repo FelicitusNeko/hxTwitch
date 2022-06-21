@@ -1,7 +1,7 @@
 package twitch.api.analytics;
 
 import haxe.http.HttpMethod;
-import twitch.api.APICall;
+import twitch.api.APIEndpoint;
 
 typedef GetExtensionAnalyticsQuery = {
 	var ?after:String;
@@ -24,13 +24,13 @@ typedef GetExtensionAnalyticsResponse = Array<{
 	}
 }>
 
-class GetExtensionAnalytics extends APICall {
+class GetExtensionAnalytics extends APIEndpoint {
 	static var scopeRequired = "analytics:read:extensions";
 	static var oauthRequired = true;
 	static var method = HttpMethod.Get;
 	static var endpoint = "analytics/extensions";
 
 	public static function call(client:Client, query:GetExtensionAnalyticsQuery):APIResponse<GetExtensionAnalyticsResponse> {
-		return APICall.call(client, cast(query, Map<String, Dynamic>), null);
+		return APIEndpoint.call(method, endpoint, client, query);
 	}
 }

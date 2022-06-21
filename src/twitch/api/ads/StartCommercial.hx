@@ -1,7 +1,7 @@
 package twitch.api.ads;
 
 import haxe.http.HttpMethod;
-import twitch.api.APICall.APIResponse;
+import twitch.api.APIEndpoint;
 
 typedef StartCommercialQuery = {};
 
@@ -16,13 +16,13 @@ typedef StartCommercialResponse = Array<{
 	var retry_after:Int;
 }>
 
-class StartCommercial extends APICall {
+class StartCommercial extends APIEndpoint {
 	public static var scopeRequired = "channel:edit:commercial";
 	public static var oauthRequired = true;
 	public static var method = HttpMethod.Post;
 	public static var endpoint = "channels/commercial";
 
 	public static function call(client:Client, request:StartCommercialRequest):APIResponse<StartCommercialResponse> {
-		return APICall.call(client, new Map<String, Dynamic>(), request);
+		return APIEndpoint.call(method, endpoint, client, [], request);
 	}
 }
