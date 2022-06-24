@@ -36,10 +36,10 @@ typedef GetClipsResponse = Array<{
 }>
 
 class GetClips extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "clips";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "clips";
 
   public static function call(client:Client, query:GetClipsQuery):APIResponse<GetClipsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

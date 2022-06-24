@@ -19,10 +19,10 @@ typedef CheckAutoModStatusResponse = Array<{
 }>
 
 class CheckAutoModStatus extends APIEndpoint {
-	static var scopeRequired = "moderation:read";
-	static var oauthRequired = true;
-	static var method = HttpMethod.Post;
-	static var endpoint = "enforcements/status";
+	public static varscopeRequired = "moderation:read";
+	public static varoauthRequired = true;
+	public static varmethod = HttpMethod.Post;
+	public static varendpoint = "enforcements/status";
 
 	public static function call(client:Client, query:CheckAutoModStatusQuery, request:CheckAutoModStatusRequest):APIResponse<CheckAutoModStatusResponse> {
 		return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);

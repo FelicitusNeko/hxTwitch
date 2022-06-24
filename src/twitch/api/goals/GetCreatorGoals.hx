@@ -23,10 +23,10 @@ typedef GetCreatorGoalsResponse = Array<{
 }>
 
 class GetCreatorGoals extends APIEndpoint {
-  static var scopeRequired = "channel:read:goals";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "goals";
+  public static varscopeRequired = "channel:read:goals";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "goals";
 
   public static function call(client:Client, query:GetCreatorGoalsQuery):APIResponse<GetCreatorGoalsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

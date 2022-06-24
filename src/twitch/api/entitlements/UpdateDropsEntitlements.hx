@@ -17,10 +17,10 @@ typedef UpdateDropsEntitlementsResponse = Array<{
 }>
 
 class UpdateDropsEntitlements extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Patch;
-  static var endpoint = "entitlements/drops";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Patch;
+  public static varendpoint = "entitlements/drops";
 
   public static function call(client:Client, request:UpdateDropsEntitlementsRequest):APIResponse<UpdateDropsEntitlementsResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

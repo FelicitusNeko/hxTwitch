@@ -21,10 +21,10 @@ typedef GetChannelInformationResponse = Array<{
 }>
 
 class GetChannelInformation extends APIEndpoint {
-	static var scopeRequired = null;
-	static var oauthRequired = false;
-	static var method = HttpMethod.Get;
-	static var endpoint = "channels";
+	public static varscopeRequired = null;
+	public static varoauthRequired = false;
+	public static varmethod = HttpMethod.Get;
+	public static varendpoint = "channels";
 
 	public static function call(client:Client, query:GetChannelInformationQuery):APIResponse<GetChannelInformationResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

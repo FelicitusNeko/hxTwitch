@@ -35,10 +35,10 @@ typedef UpdateAutoModSettingsResponse = Array<{
 }>
 
 class UpdateAutoModSettings extends APIEndpoint {
-	static var scopeRequired = "moderator:manage:automod_settings";
-	static var oauthRequired = true;
-	static var method = HttpMethod.Put;
-	static var endpoint = "moderation/automod/settings";
+	public static varscopeRequired = "moderator:manage:automod_settings";
+	public static varoauthRequired = true;
+	public static varmethod = HttpMethod.Put;
+	public static varendpoint = "moderation/automod/settings";
 
 	public static function call(client:Client, query:UpdateAutoModSettingsQuery,
 			request:UpdateAutoModSettingsRequest):APIResponse<UpdateAutoModSettingsResponse> {

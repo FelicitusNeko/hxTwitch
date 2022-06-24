@@ -17,10 +17,10 @@ typedef RedeemCodeResponse = Array<{
 }>
 
 class RedeemCode extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Post;
-  static var endpoint = "entitlements/codes";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Post;
+  public static varendpoint = "entitlements/codes";
 
   public static function call(client:Client, query:RedeemCodeQuery):APIResponse<RedeemCodeResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

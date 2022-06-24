@@ -13,10 +13,10 @@ typedef DeleteEventSubSubscriptionRequest = {
 typedef DeleteEventSubSubscriptionResponse = {}
 
 class DeleteEventSubSubscription extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Delete;
-  static var endpoint = "eventsub/subscriptions";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Delete;
+  public static varendpoint = "eventsub/subscriptions";
 
   public static function call(client:Client, query:DeleteEventSubSubscriptionQuery):APIResponse<DeleteEventSubSubscriptionResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -18,10 +18,10 @@ typedef GetGamesResponse = Array<{
 }>
 
 class GetGames extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "games";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "games";
 
   public static function call(client:Client, query:GetGamesQuery):APIResponse<GetGamesResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -21,10 +21,10 @@ typedef GetExtensionLiveChannelsResponse = Array<{
 }>
 
 class GetExtensionLiveChannels extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "extensions/live";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "extensions/live";
 
   public static function call(client:Client, query:GetExtensionLiveChannelsQuery):APIResponse<GetExtensionLiveChannelsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

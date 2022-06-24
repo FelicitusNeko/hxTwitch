@@ -23,10 +23,10 @@ typedef GetExtensionsBitsProductsResponse = Array<{
 }>
 
 class GetExtensionsBitsProducts extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "bits/extensions";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "bits/extensions";
 
   public static function call(client:Client, query:GetExtensionsBitsProductsQuery):APIResponse<GetExtensionsBitsProductsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

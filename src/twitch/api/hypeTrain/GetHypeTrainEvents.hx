@@ -40,10 +40,10 @@ typedef GetHypeTrainEventsResponse = Array<{
 }>
 
 class GetHypeTrainEvents extends APIEndpoint {
-  static var scopeRequired = "channel:read:hype_train";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "hypetrain/events";
+  public static varscopeRequired = "channel:read:hype_train";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "hypetrain/events";
 
   public static function call(client:Client, query:GetHypeTrainEventsQuery):APIResponse<GetHypeTrainEventsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -17,10 +17,10 @@ typedef GetChannelChatBadgesResponse = Array<{
 }>
 
 class GetChannelChatBadges extends APIEndpoint {
-  static var scopeRequired = "";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "chat/badges";
+  public static varscopeRequired = "";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "chat/badges";
 
   public static function call(client:Client, query:GetChannelChatBadgesQuery):APIResponse<GetChannelChatBadgesResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

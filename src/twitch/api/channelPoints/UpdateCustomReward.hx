@@ -58,10 +58,10 @@ typedef UpdateCustomRewardResponse = Array<{
 }>
 
 class UpdateCustomReward extends APIEndpoint {
-	static var scopeRequired = "channel:manage:redemptions";
-	static var oauthRequired = true;
-	static var method = HttpMethod.Patch;
-	static var endpoint = "channel_points/custom_rewards";
+	public static varscopeRequired = "channel:manage:redemptions";
+	public static varoauthRequired = true;
+	public static varmethod = HttpMethod.Patch;
+	public static varendpoint = "channel_points/custom_rewards";
 
 	public static function call(client:Client, query:UpdateCustomRewardQuery, request:UpdateCustomRewardRequest):APIResponse<UpdateCustomRewardResponse> {
 		return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);

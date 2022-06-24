@@ -26,10 +26,10 @@ typedef GetChatSettingsResponse = Array<{
 }>
 
 class GetChatSettings extends APIEndpoint {
-  static var scopeRequired = "moderator:read:chat_settings";
-  static var oauthRequired = true;
-  static var method = HttpMethod.Get;
-  static var endpoint = "chat/settings";
+  public static varscopeRequired = "moderator:read:chat_settings";
+  public static varoauthRequired = true;
+  public static varmethod = HttpMethod.Get;
+  public static varendpoint = "chat/settings";
 
   public static function call(client:Client, query:GetChatSettingsQuery):APIResponse<GetChatSettingsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

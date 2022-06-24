@@ -35,10 +35,10 @@ typedef UpdateChatSettingsResponse = Array<{
 }>
 
 class UpdateChatSettings extends APIEndpoint {
-	static var scopeRequired = "moderator:manage:chat_settings";
-	static var oauthRequired = true;
-	static var method = HttpMethod.Patch;
-	static var endpoint = "chat/settings";
+	public static varscopeRequired = "moderator:manage:chat_settings";
+	public static varoauthRequired = true;
+	public static varmethod = HttpMethod.Patch;
+	public static varendpoint = "chat/settings";
 
 	public static function call(client:Client, query:UpdateChatSettingsQuery, request:UpdateChatSettingsRequest):APIResponse<UpdateChatSettingsResponse> {
 		return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);
