@@ -18,6 +18,7 @@ typedef APIResponse<R> = {
 		var cursor:String;
 	};
 	var ?template:String;
+	var ?points:Int;
 }
 
 @:abstract
