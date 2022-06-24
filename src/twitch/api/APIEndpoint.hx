@@ -5,7 +5,7 @@ import haxe.Json;
 
 @:generic
 typedef APIResponse<R> = {
-	var code:Int;
+	var ?code:Int;
 	var ?data:R;
 	var ?date_range:{
 		var started_at:String;
@@ -31,11 +31,12 @@ abstract class APIEndpoint {
 
 	@:generic
 	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Map<String, Dynamic>, ?data:Dynamic):APIResponse<R> {
-		var retval:APIResponse<R> = {
-			code: 0
-		};
+		var apidata = client.call(method, endpoint, query, data != null ? Json.stringify(data) : null);
 
-		client.call(method, endpoint, query, data != null ? Json.stringify(data) : null);
+		var retval:APIResponse<R> = {};
+
+		if (apidata.code != 204 && apidata.text != null) retval = Json.parse(apidata.text);
+		retval.code = apidata.code;
 
 		return retval;
 	}
