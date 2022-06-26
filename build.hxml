@@ -1,3 +1,4 @@
 -cp src
 -D analyzer-optimize
+-L hxWebSockets
 --cpp bin/cpp
