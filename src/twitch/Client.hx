@@ -14,6 +14,7 @@ import haxe.Http;
 typedef RawAPIResponse = {
 	/** The HTTP status code returned. **/
 	var code:Int;
+
 	/** The body of the response, if the HTTP code is not 204 (No Content). **/
 	var ?text:String;
 }
@@ -29,46 +30,64 @@ class Client {
 	public static final pubSubURL = "wss://pubsub-edge.twitch.tv";
 
 	/** The URL for connecting to the chat server. **/
-	public static final chatURL = "wss://chat.twitch.tv";
+	public static final chatURL = "wss://irc-ws.chat.twitch.tv";
 
 	//------------- General use variables
 
 	/** The client ID (similar to username) for this client. **/
-	var _clientId = "";
+	private var _clientId = "";
 
 	/** The client secret (similar to password) for this client. **/
-	var _clientSecret = "";
+	private var _clientSecret = "";
 
 	/** The OAuth key for this client, which determines what it has access to. Externally write-only. **/
 	public var _oauthKey(null, default):Null<String> = null;
 
 	/** Generates a random 16-character nonce. **/
-	var _genNonce(get, never):String;
+	private var _genNonce(get, never):String;
 
 	//------------- PubSub variables
 
 	/** The websocket that will connect to the PubSub server. **/
-	var _ps_ws:WebSocket = null;
+	private var _ps_ws:WebSocket = null;
 
 	/** The list of PubSub topics the client is listening to, and their callbacks. **/
-	var _ps_listen:Map<String, PubSubIncomingMessage->Void> = [];
+	private var _ps_listen:Map<String, PubSubIncomingMessage->Void> = [];
 
 	/** The list of nonces sent to PubSub yet to be confirmed. **/
-	var _ps_checkNonce:Map<String, String> = [];
+	private var _ps_checkNonce:Map<String, String> = [];
 
 	/** Sends a PING message to the PubSub server once every three minutes. **/
-	var _ps_pinger:Timer = null;
+	private var _ps_pinger:Timer = null;
 
 	/** The function to call when the client connects to the PubSub server. **/
 	public var onPSConnect:Void->Void = null;
 
 	//------------- Chat variables
 
-	// nothing here yet
+	/** The scope(s) required for the chat client to function in authenticated mode.**/
+	public static final irc_scope = ["chat:read", "chat:edit"];
+
+	/** The websocket that will connect to the IRC server. **/
+	private var _irc_ws:WebSocket = null;
+
+	/** Whether the current chat session is anonymous. `null` if it is not connected. **/
+	public var irc_isAnonymous:Null<Bool> = null;
+
+	/** The function to call when the client connects to the PubSub server. **/
+	public var onIRCConnect:Void->Void = null;
+
+	/** The list of IRC listeners. **/
+	private var _irc_listen:Map<String, String->Void> = [];
+
+	//------------- General functions
 
 	public function new(clientId:String, clientSecret:String) {
 		_clientId = clientId;
 		_clientSecret = clientSecret;
+
+		chatListen = _irc_listen.set;
+		chatUnlisten = _irc_listen.remove;
 	}
 
 	function get__genNonce():String {
@@ -78,6 +97,8 @@ class Client {
 			text += possible.charAt(Math.floor(Math.random() * possible.length));
 		return text;
 	}
+
+	//------------- API functions
 
 	/**
 		Calls a Twitch API endpoint. It is recommended not to call this directly, but rather to use the endpoint definers (e.g. `twitch.api.users.GetUsers`).
@@ -122,6 +143,8 @@ class Client {
 			text: code == 204 ? null : retval.getBytes().toString()
 		};
 	}
+
+	//------------- PubSub functions
 
 	/** Connects to the PubSub server. **/
 	private function connectPubSub() {
@@ -244,7 +267,83 @@ class Client {
 		_ps_listen.remove(topic);
 
 		var count = 0;
-		for (_ in _ps_listen) count++;
-		if (count == 0) _ps_ws.close();
+		for (_ in _ps_listen)
+			count++;
+		if (count == 0)
+			_ps_ws.close();
 	}
+
+	//------------- Chat functions
+
+	/**
+		Connects to the IRC chat server.
+		@param name Optional. The username associated with the given OAuth token. If a username is not provided, the client will connect in anonymous mode.
+	**/
+	public function chatConnect(?name:String) {
+		if (_irc_ws != null)
+			_irc_ws.close();
+		if (_oauthKey == null && name != null)
+			throw new Exception("Client must be authenticated with OAuth key to connect to chat");
+
+		_irc_ws = new WebSocket(chatURL);
+		_irc_ws.additionalHeaders.set("Client-ID", _clientId);
+
+		irc_isAnonymous = name != null;
+
+		_irc_ws.onopen = () -> {
+			var caps = "\r\nCAP REQ :twitch.tv/commands twitch.tv/tags twitch.tv/membership\r\n";
+			if (name == null) {
+				var randnum = 10000 + Math.floor(Math.random() * 989999);
+				_irc_ws.send("PASS oauth:000\r\nNICK justinfan" + randnum + caps);
+			} else
+				_irc_ws.send("PASS oauth:" + _oauthKey + "\r\nNICK " + name + caps);
+			if (onIRCConnect != null)
+				onIRCConnect();
+		}
+
+		_irc_ws.onmessage = msg -> {
+			switch (msg) {
+				case StrMessage(content):
+					// TODO: parse message here
+					var messages = StringTools.rtrim(content).split("\r\n");
+					var type = "";
+					for (message in messages) {
+						var tokens = message.split(" ");
+						for (token in tokens)
+							if (!["@", ":"].contains(token.charAt(0))) {
+								type = token;
+								break;
+							}
+						if (type == "PING")
+							_irc_ws.send(StringTools.replace(message, "PING", "PONG") + "\r\n");
+						else if (_irc_listen.exists(type))
+							_irc_listen[type](message);
+					}
+				default:
+			}
+		}
+
+		_irc_ws.onerror = err -> throw new Exception("WS IRC error: " + Std.string(err));
+
+		_irc_ws.onclose = () -> {
+			irc_isAnonymous = null;
+			_irc_ws = null;
+		}
+
+		_irc_ws.open();
+	}
+
+	/**
+		Listens to a given IRC message type.
+		@param type The type of message to listen for.
+		@param func The callback function for this type.
+	**/
+	public var chatListen(default, null):(String, String->Void) -> Void;
+
+	/**
+		Stops listening for a given IRC message type.
+		@param type The type of message to stop listening for.
+		@return Whether a listener was removed. If `false`, there was no listener for this message type.
+	**/
+	public var chatUnlisten(default, null):String->Bool;
 }
