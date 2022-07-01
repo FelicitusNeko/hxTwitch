@@ -27,5 +27,31 @@
 			"}"
 		],
 		"description": "Create a new Twitch API endpoint"
+	},
+	"TwitchPubSubTopic": {
+		"prefix": "twitchpubsub",
+		"body": [
+			"import haxe.Template;",
+			"import twitch.Client;",
+			"import twitch.pubsub.PubSubTopic;",
+			"",
+			"typedef ${TM_FILENAME_BASE}Message = {",
+			"  $0",
+			"}",
+			"",
+			"class ${TM_FILENAME_BASE} extends PubSubTopic {",
+			"  public static var scope = \"$1\";",
+			"  public static var topicTemplate = \"$2\";",
+			"",
+			"  public static function listen(client:Client, callback:${TM_FILENAME_BASE}Message->Void, channelId:String) {",
+			"    PubSubTopic.listen(client, new Template(topicTemplate).execute({channelId: channelId}), callback);",
+			"  }",
+			"",
+			"  public static function unlisten(client:Client, channelId:String) {",
+			"    client.psUnlisten(new Template(topicTemplate).execute({channelId: channelId}));",
+			"  }",
+			"}"
+		],
+		"description": "Create a new Twitch PubSub topic"
 	}
 }
