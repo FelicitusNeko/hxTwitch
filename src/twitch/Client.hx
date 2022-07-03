@@ -1,5 +1,6 @@
 package twitch;
 
+import twitch.chat.ChatMessageType;
 import haxe.Timer;
 import haxe.macro.Expr.Error;
 import twitch.pubsub.PubSubIncomingMessage;
@@ -275,6 +276,11 @@ class Client {
 
 	//------------- Chat functions
 
+	private function _ircSend(...messages:String) {
+		if (_irc_ws != null && _irc_ws.state != Closed)
+			_irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
+	}
+
 	/**
 		Connects to the IRC chat server.
 		@param name Optional. The username associated with the given OAuth token. If a username is not provided, the client will connect in anonymous mode.
@@ -291,12 +297,12 @@ class Client {
 		irc_isAnonymous = name != null;
 
 		_irc_ws.onopen = () -> {
-			var caps = "\r\nCAP REQ :twitch.tv/commands twitch.tv/tags twitch.tv/membership\r\n";
+			var caps = "CAP REQ :twitch.tv/commands twitch.tv/tags twitch.tv/membership";
 			if (name == null) {
 				var randnum = 10000 + Math.floor(Math.random() * 989999);
-				_irc_ws.send("PASS oauth:000\r\nNICK justinfan" + randnum + caps);
+				_ircSend(caps, "PASS oauth:000", "NICK justinfan" + randnum);
 			} else
-				_irc_ws.send("PASS oauth:" + _oauthKey + "\r\nNICK " + name + caps);
+				_ircSend(caps, "PASS oauth:" + _oauthKey, "NICK " + name);
 			if (onIRCConnect != null)
 				onIRCConnect();
 		}
@@ -315,7 +321,7 @@ class Client {
 								break;
 							}
 						if (type == "PING")
-							_irc_ws.send(StringTools.replace(message, "PING", "PONG") + "\r\n");
+							_ircSend(StringTools.replace(message, "PING", "PONG"));
 						else if (_irc_listen.exists(type))
 							_irc_listen[type](message);
 					}
@@ -346,4 +352,59 @@ class Client {
 		@return Whether a listener was removed. If `false`, there was no listener for this message type.
 	**/
 	public var chatUnlisten(default, null):String->Bool;
+
+	/**
+		Join one or more channels.
+		@param channels The channel(s) to be joined. Channels may or may not be prefixed with `#`.
+		@throws Exception Throws an exception if not connected to chat.
+	**/
+	public function chatJoin(...channels:String) {
+		if (irc_isAnonymous == null)
+			throw new Exception("Not connected to chat");
+
+		var channelsArray:Array<String> = channels.toArray();
+		for (i => channel in channelsArray)
+			if (channel.charAt(0) != "#")
+				channelsArray[i] = "#" + channel;
+		_ircSend("JOIN " + channelsArray.join(","));
+	}
+
+	/**
+		Leave one or more channels.
+		@param channels The channel(s) to leave. Channels may or may not be prefixed with `#`.
+		@throws Exception Throws an exception if not connected to chat.
+	**/
+	public function chatPart(...channels:String) {
+		if (irc_isAnonymous == null)
+			throw new Exception("Not connected to chat");
+
+		var channelsArray:Array<String> = channels.toArray();
+		for (i => channel in channelsArray)
+			if (channel.charAt(0) != "#")
+				channelsArray[i] = "#" + channel;
+		_ircSend("PART " + channelsArray.join(","));
+	}
+
+	/**
+		Say something in a channel.
+		@param recipient The recipient of the message. May be a user or a channel. Channels must be prefixed with `#`.
+		@param message The message to send.
+		@param messageType The type of message to be sent. Note that announcements require moderator privileges.
+		@throws Exception Throws an exception if not connected to chat, or if connected anonymously.
+	**/
+	public function chatSay(recipient:String, message:String, messageType:ChatMessageType = Say) {
+		if (irc_isAnonymous == null)
+			throw new Exception("Not connected to chat");
+		if (irc_isAnonymous == true)
+			throw new Exception("Cannot send messages while anonymous");
+
+		switch (messageType) {
+			case Say:
+				_ircSend("PRIVMSG " + recipient + " :" + message);
+			case Action:
+				_ircSend("PRIVMSG " + recipient + " :\001ACTION " + message + "\001");
+			case Announce:
+				_ircSend("PRIVMSG " + recipient + " :" + message);
+		}
+	}
 }
