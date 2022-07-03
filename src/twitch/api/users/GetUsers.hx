@@ -26,10 +26,10 @@ typedef GetUsersResponse = Array<{
 }>
 
 class GetUsers extends APIEndpoint {
-  public static varscopeRequired = null;
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "users";
+  public static var scopeRequired = null;
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "users";
 
   public static function call(client:Client, query:GetUsersQuery):APIResponse<GetUsersResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

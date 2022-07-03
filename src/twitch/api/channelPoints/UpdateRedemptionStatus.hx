@@ -32,10 +32,10 @@ typedef UpdateRedemptionStatusResponse = Array<{
 }>
 
 class UpdateRedemptionStatus extends APIEndpoint {
-	public static varscopeRequired = "channel:manage:redemptions";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Patch;
-	public static varendpoint = "custom_rewards/redemptions";
+	public static var scopeRequired = "channel:manage:redemptions";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Patch;
+	public static var endpoint = "custom_rewards/redemptions";
 
 	public static function call(client:Client, query:UpdateRedemptionStatusQuery,
 			request:UpdateRedemptionStatusRequest):APIResponse<UpdateRedemptionStatusResponse> {

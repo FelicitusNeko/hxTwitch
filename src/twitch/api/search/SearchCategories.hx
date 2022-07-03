@@ -19,10 +19,10 @@ typedef SearchCategoriesResponse = Array<{
 }>
 
 class SearchCategories extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "search/categories";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "search/categories";
 
   public static function call(client:Client, query:SearchCategoriesQuery):APIResponse<SearchCategoriesResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

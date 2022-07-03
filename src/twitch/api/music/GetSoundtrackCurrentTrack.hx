@@ -37,10 +37,10 @@ typedef GetSoundtrackCurrentTrackResponse = Array<{
 }>
 
 class GetSoundtrackCurrentTrack extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "soundtrack/current_track";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "soundtrack/current_track";
 
   public static function call(client:Client, query:GetSoundtrackCurrentTrackQuery):APIResponse<GetSoundtrackCurrentTrackResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

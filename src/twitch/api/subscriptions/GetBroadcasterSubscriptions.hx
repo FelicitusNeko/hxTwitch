@@ -29,10 +29,10 @@ typedef GetBroadcasterSubscriptionsResponse = Array<{
 }>
 
 class GetBroadcasterSubscriptions extends APIEndpoint {
-  public static varscopeRequired = "channel:read:subscriptions";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "subscriptions";
+  public static var scopeRequired = "channel:read:subscriptions";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "subscriptions";
 
   public static function call(client:Client, query:GetBroadcasterSubscriptionsQuery):APIResponse<GetBroadcasterSubscriptionsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -44,10 +44,10 @@ typedef CreatePredictionResponse = Array<{
 }>
 
 class CreatePrediction extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:predictions";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "predictions";
+  public static var scopeRequired = "channel:manage:predictions";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "predictions";
 
   public static function call(client:Client, request:CreatePredictionRequest):APIResponse<CreatePredictionResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

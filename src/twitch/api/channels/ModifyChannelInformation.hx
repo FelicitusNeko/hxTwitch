@@ -17,10 +17,10 @@ typedef ModifyChannelInformationRequest = {
 typedef ModifyChannelInformationResponse = {}
 
 class ModifyChannelInformation extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:broadcast";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Patch;
-  public static varendpoint = "channels";
+  public static var scopeRequired = "channel:manage:broadcast";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Patch;
+  public static var endpoint = "channels";
 
 	public static function call(client:Client, query:ModifyChannelInformationQuery, data:ModifyChannelInformationRequest):APIResponse<ModifyChannelInformationResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

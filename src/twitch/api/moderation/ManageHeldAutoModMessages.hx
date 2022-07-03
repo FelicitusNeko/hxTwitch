@@ -15,10 +15,10 @@ typedef ManageHeldAutoModMessagesRequest = {
 typedef ManageHeldAutoModMessagesResponse = {}
 
 class ManageHeldAutoModMessages extends APIEndpoint {
-  public static varscopeRequired = "moderator:manage:automod";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "moderation/automod/message";
+  public static var scopeRequired = "moderator:manage:automod";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "moderation/automod/message";
 
   public static function call(client:Client, request:ManageHeldAutoModMessagesRequest):APIResponse<ManageHeldAutoModMessagesResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

@@ -63,10 +63,10 @@ typedef GetReleasedExtensionsResponse = Array<{
 }>
 
 class GetReleasedExtensions extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "extensions/released";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "extensions/released";
 
   public static function call(client:Client, query:GetReleasedExtensionsQuery):APIResponse<GetReleasedExtensionsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -34,10 +34,10 @@ typedef GetStreamsResponse = Array<{
 }>
 
 class GetStreams extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "streams";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "streams";
 
   public static function call(client:Client, query:GetStreamsQuery):APIResponse<GetStreamsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

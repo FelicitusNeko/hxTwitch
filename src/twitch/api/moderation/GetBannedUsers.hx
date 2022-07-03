@@ -27,10 +27,10 @@ typedef GetBannedUsersResponse = Array<{
 }>
 
 class GetBannedUsers extends APIEndpoint {
-  public static varscopeRequired = "moderation:read";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "moderation/banned";
+  public static var scopeRequired = "moderation:read";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "moderation/banned";
 
   public static function call(client:Client, query:GetBannedUsersQuery):APIResponse<GetBannedUsersResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

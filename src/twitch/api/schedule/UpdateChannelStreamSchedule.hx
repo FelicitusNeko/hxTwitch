@@ -17,10 +17,10 @@ typedef UpdateChannelStreamScheduleRequest = {
 typedef UpdateChannelStreamScheduleResponse = {}
 
 class UpdateChannelStreamSchedule extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:schedule";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Patch;
-  public static varendpoint = "schedule/settings";
+  public static var scopeRequired = "channel:manage:schedule";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Patch;
+  public static var endpoint = "schedule/settings";
 
   public static function call(client:Client, query:UpdateChannelStreamScheduleQuery):APIResponse<UpdateChannelStreamScheduleResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

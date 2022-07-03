@@ -23,10 +23,10 @@ typedef GetChannelEmotesResponse = Array<{
 }>
 
 class GetChannelEmotes extends APIEndpoint {
-	public static varscopeRequired = null;
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Get;
-	public static varendpoint = "chat/emotes";
+	public static var scopeRequired = null;
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Get;
+	public static var endpoint = "chat/emotes";
 
 	public static function call(client:Client, query:GetChannelEmotesQuery):APIResponse<GetChannelEmotesResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

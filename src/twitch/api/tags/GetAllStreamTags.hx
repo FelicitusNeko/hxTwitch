@@ -20,10 +20,10 @@ typedef GetAllStreamTagsResponse = Array<{
 }>
 
 class GetAllStreamTags extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "tags/streams";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "tags/streams";
 
   public static function call(client:Client, query:GetAllStreamTagsQuery):APIResponse<GetAllStreamTagsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

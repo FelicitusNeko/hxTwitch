@@ -26,10 +26,10 @@ typedef GetChannelTeamsResponse = Array<{
 }>
 
 class GetChannelTeams extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "teams/channel";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "teams/channel";
 
   public static function call(client:Client, query:GetChannelTeamsQuery):APIResponse<GetChannelTeamsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -25,10 +25,10 @@ typedef GetExtensionAnalyticsResponse = Array<{
 }>
 
 class GetExtensionAnalytics extends APIEndpoint {
-	public static varscopeRequired = "analytics:read:extensions";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Get;
-	public static varendpoint = "analytics/extensions";
+	public static var scopeRequired = "analytics:read:extensions";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Get;
+	public static var endpoint = "analytics/extensions";
 
 	public static function call(client:Client, query:GetExtensionAnalyticsQuery):APIResponse<GetExtensionAnalyticsResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

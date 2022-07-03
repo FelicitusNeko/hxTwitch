@@ -17,10 +17,10 @@ typedef StartRaidResponse = Array<{
 }>
 
 class StartRaid extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:raids";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "raids";
+  public static var scopeRequired = "channel:manage:raids";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "raids";
 
   public static function call(client:Client, query:StartRaidQuery):APIResponse<StartRaidResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

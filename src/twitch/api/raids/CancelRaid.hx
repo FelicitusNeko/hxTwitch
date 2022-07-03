@@ -13,10 +13,10 @@ typedef CancelRaidRequest = {
 typedef CancelRaidResponse = {}
 
 class CancelRaid extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:raids";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Delete;
-  public static varendpoint = "raids";
+  public static var scopeRequired = "channel:manage:raids";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Delete;
+  public static var endpoint = "raids";
 
   public static function call(client:Client, query:CancelRaidQuery):APIResponse<CancelRaidResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

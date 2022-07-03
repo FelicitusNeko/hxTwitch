@@ -23,10 +23,10 @@ typedef CheckUserSubscriptionResponse = Array<{
 }>
 
 class CheckUserSubscription extends APIEndpoint {
-  public static varscopeRequired = "user:read:subscriptions";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "subscriptions/user";
+  public static var scopeRequired = "user:read:subscriptions";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "subscriptions/user";
 
   public static function call(client:Client, query:CheckUserSubscriptionQuery):APIResponse<CheckUserSubscriptionResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

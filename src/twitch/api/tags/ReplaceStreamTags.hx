@@ -15,10 +15,10 @@ typedef ReplaceStreamTagsResponse = Array<{
 }>
 
 class ReplaceStreamTags extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:broadcast";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Put;
-  public static varendpoint = "streams/tags";
+  public static var scopeRequired = "channel:manage:broadcast";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Put;
+  public static var endpoint = "streams/tags";
 
   public static function call(client:Client, query:ReplaceStreamTagsQuery, request:ReplaceStreamTagsRequest):APIResponse<ReplaceStreamTagsResponse> {
     return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);

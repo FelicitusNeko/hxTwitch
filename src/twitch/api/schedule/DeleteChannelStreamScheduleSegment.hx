@@ -13,10 +13,10 @@ typedef DeleteChannelStreamScheduleSegmentRequest = {}
 typedef DeleteChannelStreamScheduleSegmentResponse = {}
 
 class DeleteChannelStreamScheduleSegment extends APIEndpoint {
-	public static varscopeRequired = "channel:manage:schedule";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Delete;
-	public static varendpoint = "schedule/segment";
+	public static var scopeRequired = "channel:manage:schedule";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Delete;
+	public static var endpoint = "schedule/segment";
 
 	public static function call(client:Client, query:DeleteChannelStreamScheduleSegmentQuery):APIResponse<DeleteChannelStreamScheduleSegmentResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

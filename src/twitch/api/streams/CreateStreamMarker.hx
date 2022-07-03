@@ -19,10 +19,10 @@ typedef CreateStreamMarkerResponse = Array<{
 }>
 
 class CreateStreamMarker extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:broadcast";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "streams/markers";
+  public static var scopeRequired = "channel:manage:broadcast";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "streams/markers";
 
   public static function call(client:Client, request:CreateStreamMarkerRequest):APIResponse<CreateStreamMarkerResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

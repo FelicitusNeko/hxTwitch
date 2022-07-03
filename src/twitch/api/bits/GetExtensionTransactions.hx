@@ -37,10 +37,10 @@ typedef GetExtensionTransactionsResponse = Array<{
 }>
 
 class GetExtensionTransactions extends APIEndpoint {
-	public static varscopeRequired = null;
-	public static varoauthRequired = false;
-	public static varmethod = HttpMethod.Get;
-	public static varendpoint = "extensions/transactions";
+	public static var scopeRequired = null;
+	public static var oauthRequired = false;
+	public static var method = HttpMethod.Get;
+	public static var endpoint = "extensions/transactions";
 
 	public static function call(client:Client, query:GetExtensionTransactionsQuery):APIResponse<GetExtensionTransactionsResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

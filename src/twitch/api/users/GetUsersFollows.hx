@@ -24,10 +24,10 @@ typedef GetUsersFollowsResponse = Array<{
 }>
 
 class GetUsersFollows extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "users/follows";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "users/follows";
 
   public static function call(client:Client, query:GetUsersFollowsQuery):APIResponse<GetUsersFollowsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

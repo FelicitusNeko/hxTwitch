@@ -17,10 +17,10 @@ typedef GetCodeStatusResponse = Array<{
 }>
 
 class GetCodeStatus extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "entitlements/codes";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "entitlements/codes";
 
   public static function call(client:Client, query:GetCodeStatusQuery):APIResponse<GetCodeStatusResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

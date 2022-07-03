@@ -17,10 +17,10 @@ typedef GetChannelEditorsResponse = Array<{
 }>
 
 class GetChannelEditors extends APIEndpoint {
-  public static varscopeRequired = "channel:read:editors";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "channels/editors";
+  public static var scopeRequired = "channel:read:editors";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "channels/editors";
 
 	public static function call(client:Client, query:GetChannelEditorsQuery):APIResponse<GetChannelEditorsResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

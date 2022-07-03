@@ -21,10 +21,10 @@ typedef GetBitsLeaderboardResponse = Array<{
 }>
 
 class GetBitsLeaderboard extends APIEndpoint {
-	public static varscopeRequired = "bits:read";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Get;
-	public static varendpoint = "bits/leaderboard";
+	public static var scopeRequired = "bits:read";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Get;
+	public static var endpoint = "bits/leaderboard";
 
 	public static function call(client:Client, query:GetBitsLeaderboardQuery):APIResponse<GetBitsLeaderboardResponse> {
 		return APIEndpoint.call(method, endpoint, client, query);

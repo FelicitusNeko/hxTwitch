@@ -38,10 +38,10 @@ typedef GetChannelStreamScheduleResponse = Array<{
 }>
 
 class GetChannelStreamSchedule extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "schedule";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "schedule";
 
   public static function call(client:Client, query:GetChannelStreamScheduleQuery):APIResponse<GetChannelStreamScheduleResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

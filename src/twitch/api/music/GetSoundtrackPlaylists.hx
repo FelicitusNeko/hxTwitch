@@ -17,10 +17,10 @@ typedef GetSoundtrackPlaylistsResponse = Array<{
 }>
 
 class GetSoundtrackPlaylists extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "soundtrack/playlists";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "soundtrack/playlists";
 
   public static function call(client:Client):APIResponse<GetSoundtrackPlaylistsResponse> {
     return APIEndpoint.call(method, endpoint, client);

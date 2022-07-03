@@ -15,10 +15,10 @@ typedef GetStreamKeyResponse = Array<{
 }>
 
 class GetStreamKey extends APIEndpoint {
-  public static varscopeRequired = "channel:read:stream_key";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "streams/key";
+  public static var scopeRequired = "channel:read:stream_key";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "streams/key";
 
   public static function call(client:Client, query:GetStreamKeyQuery):APIResponse<GetStreamKeyResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

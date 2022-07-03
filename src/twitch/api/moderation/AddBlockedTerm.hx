@@ -23,10 +23,10 @@ typedef AddBlockedTermResponse = Array<{
 }>
 
 class AddBlockedTerm extends APIEndpoint {
-  public static varscopeRequired = "moderator:manage:blocked_terms";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "moderation/blocked_terms";
+  public static var scopeRequired = "moderator:manage:blocked_terms";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "moderation/blocked_terms";
 
   public static function call(client:Client, query:AddBlockedTermQuery, request:AddBlockedTermRequest):APIResponse<AddBlockedTermResponse> {
     return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);

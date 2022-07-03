@@ -20,10 +20,10 @@ typedef GetModeratorsResponse = Array<{
 }>
 
 class GetModerators extends APIEndpoint {
-  public static varscopeRequired = "moderation:read";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "moderation/moderators";
+  public static var scopeRequired = "moderation:read";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "moderation/moderators";
 
   public static function call(client:Client, query:GetModeratorsQuery):APIResponse<GetModeratorsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

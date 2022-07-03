@@ -40,10 +40,10 @@ typedef UpdateChannelStreamScheduleSegmentResponse = Array<{
 }>
 
 class UpdateChannelStreamScheduleSegment extends APIEndpoint {
-	public static varscopeRequired = "channel:manage:schedule";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Patch;
-	public static varendpoint = "schedule/segment";
+	public static var scopeRequired = "channel:manage:schedule";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Patch;
+	public static var endpoint = "schedule/segment";
 
 	public static function call(client:Client, query:UpdateChannelStreamScheduleSegmentQuery,
 			request:UpdateChannelStreamScheduleSegmentRequest):APIResponse<UpdateChannelStreamScheduleSegmentResponse> {

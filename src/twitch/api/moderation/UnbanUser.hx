@@ -15,10 +15,10 @@ typedef UnbanUserRequest = {
 typedef UnbanUserResponse = {}
 
 class UnbanUser extends APIEndpoint {
-  public static varscopeRequired = "moderator:manage:banned_users";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Delete;
-  public static varendpoint = "moderation/bans";
+  public static var scopeRequired = "moderator:manage:banned_users";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Delete;
+  public static var endpoint = "moderation/bans";
 
   public static function call(client:Client, query:UnbanUserQuery):APIResponse<UnbanUserResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

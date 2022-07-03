@@ -23,10 +23,10 @@ typedef BanUserResponse = Array<{
 }>
 
 class BanUser extends APIEndpoint {
-	public static varscopeRequired = "moderator:manage:banned_users";
-	public static varoauthRequired = true;
-	public static varmethod = HttpMethod.Post;
-	public static varendpoint = "moderation/bans";
+	public static var scopeRequired = "moderator:manage:banned_users";
+	public static var oauthRequired = true;
+	public static var method = HttpMethod.Post;
+	public static var endpoint = "moderation/bans";
 
 	public static function call(client:Client, query:BanUserQuery, request:BanUserRequest):APIResponse<BanUserResponse> {
 		return APIEndpoint.call(method, endpoint, client, cast(query, Map<String, Dynamic>), request);

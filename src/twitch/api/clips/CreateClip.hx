@@ -17,10 +17,10 @@ typedef CreateClipResponse = Array<{
 }>
 
 class CreateClip extends APIEndpoint {
-  public static varscopeRequired = "clips:edit";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "clips";
+  public static var scopeRequired = "clips:edit";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "clips";
 
   public static function call(client:Client, query:CreateClipQuery):APIResponse<CreateClipResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

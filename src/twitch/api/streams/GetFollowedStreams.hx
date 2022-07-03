@@ -29,10 +29,10 @@ typedef GetFollowedStreamsResponse = Array<{
 }>
 
 class GetFollowedStreams extends APIEndpoint {
-  public static varscopeRequired = "user:read:follows";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "streams/followed";
+  public static var scopeRequired = "user:read:follows";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "streams/followed";
 
   public static function call(client:Client, query:GetFollowedStreamsQuery):APIResponse<GetFollowedStreamsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

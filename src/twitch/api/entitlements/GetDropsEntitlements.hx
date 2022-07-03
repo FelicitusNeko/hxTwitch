@@ -26,10 +26,10 @@ typedef GetDropsEntitlementsResponse = Array<{
 }>
 
 class GetDropsEntitlements extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "entitlements/drops";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "entitlements/drops";
 
   public static function call(client:Client, query:GetDropsEntitlementsQuery):APIResponse<GetDropsEntitlementsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

@@ -16,10 +16,10 @@ typedef GetGlobalChatBadgesResponse = Array<{
 }>
 
 class GetGlobalChatBadges extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "chat/badges/global";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "chat/badges/global";
 
   public static function call(client:Client):APIResponse<GetGlobalChatBadgesResponse> {
     return APIEndpoint.call(method, endpoint, client);

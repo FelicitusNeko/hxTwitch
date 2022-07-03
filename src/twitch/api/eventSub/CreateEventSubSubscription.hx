@@ -32,10 +32,10 @@ typedef CreateEventSubSubscriptionResponse = Array<{
 }>
 
 class CreateEventSubSubscription extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "eventsub/subscriptions";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "eventsub/subscriptions";
 
   public static function call(client:Client, request:CreateEventSubSubscriptionRequest):APIResponse<CreateEventSubSubscriptionResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

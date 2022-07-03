@@ -25,10 +25,10 @@ typedef UpdateUserResponse = Array<{
 }>
 
 class UpdateUser extends APIEndpoint {
-  public static varscopeRequired = "user:edit";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Put;
-  public static varendpoint = "users";
+  public static var scopeRequired = "user:edit";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Put;
+  public static var endpoint = "users";
 
   public static function call(client:Client, query:UpdateUserQuery):APIResponse<UpdateUserResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

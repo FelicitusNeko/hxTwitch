@@ -42,10 +42,10 @@ typedef CreatePollResponse = Array<{
 }>
 
 class CreatePoll extends APIEndpoint {
-  public static varscopeRequired = "channel:manage:polls";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Post;
-  public static varendpoint = "polls";
+  public static var scopeRequired = "channel:manage:polls";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Post;
+  public static var endpoint = "polls";
 
   public static function call(client:Client, request:CreatePollRequest):APIResponse<CreatePollResponse> {
     return APIEndpoint.call(method, endpoint, client, [], request);

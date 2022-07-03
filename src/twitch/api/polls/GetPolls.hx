@@ -36,10 +36,10 @@ typedef GetPollsResponse = Array<{
 }>
 
 class GetPolls extends APIEndpoint {
-  public static varscopeRequired = "channel:read:polls";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "polls";
+  public static var scopeRequired = "channel:read:polls";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "polls";
 
   public static function call(client:Client, query:GetPollsQuery):APIResponse<GetPollsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);

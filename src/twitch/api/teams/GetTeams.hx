@@ -29,10 +29,10 @@ typedef GetTeamsResponse = Array<{
 }>
 
 class GetTeams extends APIEndpoint {
-  public static varscopeRequired = "";
-  public static varoauthRequired = true;
-  public static varmethod = HttpMethod.Get;
-  public static varendpoint = "teams";
+  public static var scopeRequired = "";
+  public static var oauthRequired = true;
+  public static var method = HttpMethod.Get;
+  public static var endpoint = "teams";
 
   public static function call(client:Client, query:GetTeamsQuery):APIResponse<GetTeamsResponse> {
     return APIEndpoint.call(method, endpoint, client, query);
