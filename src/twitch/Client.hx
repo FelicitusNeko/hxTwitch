@@ -76,7 +76,7 @@ class Client {
 	public var irc_isAnonymous:Null<Bool> = null;
 
 	/** The function to call when the client connects to the PubSub server. **/
-	public var onIRCConnect:Void->Void = null;
+	public var onChatConnect:Void->Void = null;
 
 	/** The list of IRC listeners. **/
 	private var _irc_listen:Map<String, String->Void> = [];
@@ -303,8 +303,8 @@ class Client {
 				_ircSend(caps, "PASS oauth:000", "NICK justinfan" + randnum);
 			} else
 				_ircSend(caps, "PASS oauth:" + _oauthKey, "NICK " + name);
-			if (onIRCConnect != null)
-				onIRCConnect();
+			if (onChatConnect != null)
+				onChatConnect();
 		}
 
 		_irc_ws.onmessage = msg -> {
