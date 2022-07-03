@@ -310,7 +310,6 @@ class Client {
 		_irc_ws.onmessage = msg -> {
 			switch (msg) {
 				case StrMessage(content):
-					// TODO: parse message here
 					var messages = StringTools.rtrim(content).split("\r\n");
 					var type = "";
 					for (message in messages) {
@@ -324,6 +323,8 @@ class Client {
 							_ircSend(StringTools.replace(message, "PING", "PONG"));
 						else if (_irc_listen.exists(type))
 							_irc_listen[type](message);
+						else if (_irc_listen.exists("*"))
+							_irc_listen["*"](message);
 					}
 				default:
 			}
@@ -341,7 +342,7 @@ class Client {
 
 	/**
 		Listens to a given IRC message type.
-		@param type The type of message to listen for.
+		@param type The type of message to listen for. `"*"` can be used as a fallback catchall.
 		@param func The callback function for this type.
 	**/
 	public var chatListen(default, null):(String, String->Void) -> Void;
