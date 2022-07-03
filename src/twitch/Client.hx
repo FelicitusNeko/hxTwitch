@@ -276,6 +276,10 @@ class Client {
 
 	//------------- Chat functions
 
+	/**
+		Properly terminates and concatenates IRC messages to be sent.
+		@param messages The messages to send.
+	**/
 	private function _ircSend(...messages:String) {
 		if (_irc_ws != null && _irc_ws.state != Closed)
 			_irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
@@ -284,6 +288,7 @@ class Client {
 	/**
 		Connects to the IRC chat server.
 		@param name Optional. The username associated with the given OAuth token. If a username is not provided, the client will connect in anonymous mode.
+		@throws Exception Throws an exception if trying to log in non-anonymously without an OAuth token.
 	**/
 	public function chatConnect(?name:String) {
 		if (_irc_ws != null)
