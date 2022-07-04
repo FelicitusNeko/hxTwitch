@@ -1,15 +1,14 @@
 package twitch;
 
-import twitch.chat.ChatMessageType;
-import haxe.Timer;
-import haxe.macro.Expr.Error;
-import twitch.pubsub.PubSubIncomingMessage;
-import hx.ws.WebSocket;
-import haxe.Json;
 import haxe.Exception;
+import haxe.Http;
 import haxe.http.HttpMethod;
 import haxe.io.BytesOutput;
-import haxe.Http;
+import haxe.Json;
+import haxe.Timer;
+import hx.ws.WebSocket;
+import twitch.chat.ChatMessageType;
+import twitch.pubsub.PubSubIncomingMessage;
 
 /** The raw representation of data received from the API. **/
 typedef RawAPIResponse = {
@@ -32,6 +31,7 @@ class Client {
 
 	/** The URL for connecting to the chat server. **/
 	public static final chatURL = "wss://irc-ws.chat.twitch.tv";
+	// public static final chatURL = "ws://irc-ws.chat.twitch.tv";
 
 	//------------- General use variables
 
@@ -75,7 +75,7 @@ class Client {
 	/** Whether the current chat session is anonymous. `null` if it is not connected. **/
 	public var irc_isAnonymous:Null<Bool> = null;
 
-	/** The function to call when the client connects to the PubSub server. **/
+	/** The function to call when the client connects to the chat server and authentication has succeeded. **/
 	public var onChatConnect:Void->Void = null;
 
 	/** The list of IRC listeners. **/
@@ -159,7 +159,7 @@ class Client {
 		_ps_listen.clear();
 		_ps_checkNonce.clear();
 
-		_ps_ws = new WebSocket(pubSubURL);
+		_ps_ws = new WebSocket(pubSubURL, false);
 		_ps_ws.additionalHeaders.set("Client-ID", _clientId);
 		_ps_ws.additionalHeaders.set("Authorization", "OAuth " + _oauthKey);
 
@@ -281,8 +281,12 @@ class Client {
 		@param messages The messages to send.
 	**/
 	private function _ircSend(...messages:String) {
-		if (_irc_ws != null && _irc_ws.state != Closed)
-			_irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
+		if (_irc_ws != null && _irc_ws.state != Closed) {
+			trace("Sending: " + messages.toArray().map(i -> i + "\r\n").join(""));
+			for (message in messages)
+				_irc_ws.send(message + "\r\n");
+			// _irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
+		}
 	}
 
 	/**
@@ -291,31 +295,36 @@ class Client {
 		@throws Exception Throws an exception if trying to log in non-anonymously without an OAuth token.
 	**/
 	public function chatConnect(?name:String) {
+		trace("chatConnect()");
+
 		if (_irc_ws != null)
 			_irc_ws.close();
 		if (_oauthKey == null && name != null)
 			throw new Exception("Client must be authenticated with OAuth key to connect to chat");
 
-		_irc_ws = new WebSocket(chatURL);
+		_irc_ws = new WebSocket(chatURL, false);
 		_irc_ws.additionalHeaders.set("Client-ID", _clientId);
 
 		irc_isAnonymous = name != null;
 
 		_irc_ws.onopen = () -> {
+			trace("Chat WS open");
 			var caps = "CAP REQ :twitch.tv/commands twitch.tv/tags twitch.tv/membership";
 			if (name == null) {
+				trace("Authenticating as anonymous user");
 				var randnum = 10000 + Math.floor(Math.random() * 989999);
 				_ircSend(caps, "PASS oauth:000", "NICK justinfan" + randnum);
-			} else
+			} else {
+				trace("Authenticating as " + name);
 				_ircSend(caps, "PASS oauth:" + _oauthKey, "NICK " + name);
-			if (onChatConnect != null)
-				onChatConnect();
+			}
 		}
 
 		_irc_ws.onmessage = msg -> {
 			switch (msg) {
 				case StrMessage(content):
 					var messages = StringTools.rtrim(content).split("\r\n");
+					trace("Received: " + messages);
 					var type = "";
 					for (message in messages) {
 						var tokens = message.split(" ");
@@ -324,6 +333,9 @@ class Client {
 								type = token;
 								break;
 							}
+						if (type == "001" && onChatConnect != null)
+							onChatConnect();
+
 						if (type == "PING")
 							_ircSend(StringTools.replace(message, "PING", "PONG"));
 						else if (_irc_listen.exists(type))
@@ -335,13 +347,18 @@ class Client {
 			}
 		}
 
-		_irc_ws.onerror = err -> throw new Exception("WS IRC error: " + Std.string(err));
+		_irc_ws.onerror = err -> {
+			trace("Chat connection error: " + err);
+			throw new Exception("WS IRC error: " + Std.string(err));
+		}
 
 		_irc_ws.onclose = () -> {
+			trace("Chat connection closed");
 			irc_isAnonymous = null;
 			_irc_ws = null;
 		}
 
+		trace("Starting connection");
 		_irc_ws.open();
 	}
 
