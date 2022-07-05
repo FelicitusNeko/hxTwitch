@@ -282,9 +282,9 @@ class Client {
 	**/
 	private function _ircSend(...messages:String) {
 		if (_irc_ws != null && _irc_ws.state != Closed) {
-			trace("Sending: " + messages.toArray().map(i -> i + "\r\n").join(""));
+			trace("Sending: " + messages.toArray());
 			for (message in messages)
-				_irc_ws.send(message + "\r\n");
+				_irc_ws.send(message/* + "\r\n"*/);
 			// _irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
 		}
 	}
@@ -324,7 +324,7 @@ class Client {
 			switch (msg) {
 				case StrMessage(content):
 					var messages = StringTools.rtrim(content).split("\r\n");
-					trace("Received: " + messages);
+					//trace("Received: " + messages);
 					var type = "";
 					for (message in messages) {
 						var tokens = message.split(" ");
@@ -343,7 +343,8 @@ class Client {
 						else if (_irc_listen.exists("*"))
 							_irc_listen["*"](message);
 					}
-				default:
+				case BytesMessage(content):
+					trace("---------- RECEIVED BYTES MESSAGE: " + content.readAllAvailableBytes().toString());
 			}
 		}
 
