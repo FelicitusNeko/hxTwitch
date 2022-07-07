@@ -7,7 +7,7 @@ import haxe.io.BytesOutput;
 import haxe.Json;
 import haxe.Timer;
 import hx.ws.WebSocket;
-import twitch.chat.ChatMessageType;
+import twitch.chat.ChatSayType;
 import twitch.pubsub.PubSubIncomingMessage;
 
 /** The raw representation of data received from the API. **/
@@ -31,8 +31,8 @@ class Client {
 
 	/** The URL for connecting to the chat server. **/
 	public static final chatURL = "wss://irc-ws.chat.twitch.tv";
-	// public static final chatURL = "ws://irc-ws.chat.twitch.tv";
 
+	// public static final chatURL = "ws://irc-ws.chat.twitch.tv";
 	//------------- General use variables
 
 	/** The client ID (similar to username) for this client. **/
@@ -282,9 +282,9 @@ class Client {
 	**/
 	private function _ircSend(...messages:String) {
 		if (_irc_ws != null && _irc_ws.state != Closed) {
-			trace("Sending: " + messages.toArray());
+			// trace("Sending: " + messages.toArray());
 			for (message in messages)
-				_irc_ws.send(message/* + "\r\n"*/);
+				_irc_ws.send(message /* + "\r\n"*/);
 			// _irc_ws.send(messages.toArray().map(i -> i + "\r\n").join(""));
 		}
 	}
@@ -295,7 +295,7 @@ class Client {
 		@throws Exception Throws an exception if trying to log in non-anonymously without an OAuth token.
 	**/
 	public function chatConnect(?name:String) {
-		trace("chatConnect()");
+		// trace("chatConnect()");
 
 		if (_irc_ws != null)
 			_irc_ws.close();
@@ -308,15 +308,15 @@ class Client {
 		irc_isAnonymous = name != null;
 
 		_irc_ws.onopen = () -> {
-			trace("Chat WS open");
-			var caps = "CAP REQ :twitch.tv/commands twitch.tv/tags twitch.tv/membership";
+			// trace("Chat WS open");
+			var caps = ["twitch.tv/commands", "twitch.tv/tags", "twitch.tv/membership"];
 			if (name == null) {
 				trace("Authenticating as anonymous user");
 				var randnum = 10000 + Math.floor(Math.random() * 989999);
-				_ircSend(caps, "PASS oauth:000", "NICK justinfan" + randnum);
+				_ircSend("CAP REQ :" + caps.join(" "), "PASS oauth:000", "NICK justinfan" + randnum);
 			} else {
 				trace("Authenticating as " + name);
-				_ircSend(caps, "PASS oauth:" + _oauthKey, "NICK " + name);
+				_ircSend("CAP REQ :" + caps.join(" "), "PASS oauth:" + _oauthKey, "NICK " + name);
 			}
 		}
 
@@ -324,9 +324,10 @@ class Client {
 			switch (msg) {
 				case StrMessage(content):
 					var messages = StringTools.rtrim(content).split("\r\n");
-					//trace("Received: " + messages);
+					// trace("Received: " + messages);
 					var type = "";
 					for (message in messages) {
+						// TODO: parse out the message before acting on it, even if it's a PING
 						var tokens = message.split(" ");
 						for (token in tokens)
 							if (!["@", ":"].contains(token.charAt(0))) {
@@ -344,7 +345,8 @@ class Client {
 							_irc_listen["*"](message);
 					}
 				case BytesMessage(content):
-					trace("---------- RECEIVED BYTES MESSAGE: " + content.readAllAvailableBytes().toString());
+					// this shouldn't happen, but just in case it does
+					trace("---------- RECEIVED UNSUPPORTED BYTES MESSAGE: " + content.readAllAvailableBytes().toString());
 			}
 		}
 
@@ -413,22 +415,28 @@ class Client {
 		Say something in a channel.
 		@param recipient The recipient of the message. May be a user or a channel. Channels must be prefixed with `#`.
 		@param message The message to send.
-		@param messageType The type of message to be sent. Note that announcements require moderator privileges.
+		@param messageType Optional. The type of message to be sent. Note that announcements require moderator privileges. Defaults to `Say`.
+		@param replyTo Optional. The ID of the message which is being replied. Ignored if `messageType` is `Announce`.
 		@throws Exception Throws an exception if not connected to chat, or if connected anonymously.
 	**/
-	public function chatSay(recipient:String, message:String, messageType:ChatMessageType = Say) {
+	public function chatSay(recipient:String, message:String, messageType:ChatSayType = Say, ?replyTo:String) {
 		if (irc_isAnonymous == null)
 			throw new Exception("Not connected to chat");
 		if (irc_isAnonymous == true)
 			throw new Exception("Cannot send messages while anonymous");
 
+		var recipientIsChannel = recipient.charAt(0) == "#";
+		var replyTag = (!recipientIsChannel || replyTo == null) ? "" : "@reply-parent-msg-id=" + replyTo + " ";
+
 		switch (messageType) {
 			case Say:
-				_ircSend("PRIVMSG " + recipient + " :" + message);
+				_ircSend(replyTag + "PRIVMSG " + recipient + " :" + message);
 			case Action:
-				_ircSend("PRIVMSG " + recipient + " :\001ACTION " + message + "\001");
+				_ircSend(replyTag + "PRIVMSG " + recipient + " :\001ACTION " + message + "\001");
 			case Announce:
-				_ircSend("PRIVMSG " + recipient + " :" + message);
+				if (!recipientIsChannel)
+					throw new Exception("Cannot /announce to a user; must be a channel");
+				_ircSend("PRIVMSG " + recipient + " :/announce " + message);
 		}
 	}
 }
