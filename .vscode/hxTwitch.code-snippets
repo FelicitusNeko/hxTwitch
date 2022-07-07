@@ -53,5 +53,21 @@
 			"}"
 		],
 		"description": "Create a new Twitch PubSub topic"
+	},
+	"parseTags": {
+		"prefix": "twitchchatparser",
+		"body": [
+			"static function parse$1(tags:Map<String, String>) {",
+			"  var retval:$1Tags = {};",
+			"",
+			"  for (k => v in tags)",
+			"    switch (k) {",
+			"      case $0:",
+			"    }",
+			"",
+			"  return retval;",
+			"}"
+		],
+		"description": "Create a new function to parse Twitch tags"
 	}
 }
