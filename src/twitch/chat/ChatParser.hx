@@ -3,6 +3,92 @@ package twitch.chat;
 import twitch.chat.ChatMessageType;
 
 class ChatParser {
+	static function parseForBitsBadgeTier(tags:Map<String, String>) {
+		var retval:ForBitsBadgeTier = {};
+	
+		for (k => v in tags)
+			switch (k.substr(10)) {
+				case "threshold": retval.threshold = Std.parseInt(v);
+			}
+	
+		return retval;
+	}
+
+	static function parseForGiftPaidUpgrade(tags:Map<String, String>) {
+		var retval:ForGiftPaidUpgrade = {};
+	
+		for (k => v in tags)
+			switch (k.substr(10)) {
+				case "promo-gift-total": retval.promo_gift_total = Std.parseInt(v);
+				case "promo-name": retval.promo_name = v;
+				case "sender-login": retval.sender_login = v;
+				case "sender-name": retval.sender_name = v;
+			}
+	
+		return retval;
+	}
+
+	static function parseForRaid(tags:Map<String, String>) {
+		var retval:ForRaid = {};
+	
+		for (k => v in tags)
+			switch (k.substr(10)) {
+				case "displayName": retval.displayName = v;
+				case "login": retval.login = v;
+				case "viewerCount": retval.viewerCount = Std.parseInt(v);
+			}
+	
+		return retval;
+	}
+
+	static function parseForRitual(tags:Map<String, String>) {
+		var retval:ForRitual = {};
+	
+		for (k => v in tags)
+			switch (k.substr(10)) {
+				case "ritual-name": retval.ritual_name = v;
+			}
+	
+		return retval;
+	}
+
+	static function parseForSub(tags:Map<String, String>) {
+		var retval:ForSub = {};
+	
+		for (k => v in tags)
+			switch (k.substr(10)) {
+				case "cumulative-months": retval.cumulative_months = Std.parseInt(v);
+				case "should-share-streak": retval.should_share_streak = v=="1";
+				case "streak-months": retval.streak_months = Std.parseInt(v);
+				case "sub-plan": retval.sub_plan = v;
+				case "sub-plan-name": retval.sub_plan_name = v;
+			}
+	
+		return retval;
+	}
+
+	static function parseForSubGift(tags:Map<String, String>) {
+		var retval:ForSubGift = {};
+	
+		for (k => v in tags){
+			if (StringTools.startsWith(k, "recipient")) retval.recipient = {};
+			switch (k.substr(10)) {
+				case "months": retval.months = Std.parseInt(v);
+				case "recipient-display-name": retval.recipient.display_name = v;
+				case "recipient-id": retval.recipient.id = v;
+				case "recipient-user-name": retval.recipient.user_name = v;
+				case "sub-plan": retval.sub_plan = v;
+				case "sub-plan-name": retval.sub_plan_name = v;
+				case "gift-months": retval.gift_months = Std.parseInt(v);
+			}
+	}
+		return retval;
+	}
+
+	static function parseForOther(_:Map<String, String>) {
+		return null;
+	}
+
 	static function parseClearChat(tags:Map<String, String>) {
 		var retval:ClearChatTags = {};
 
@@ -193,7 +279,75 @@ class ChatParser {
 		return retval;
 	}
 
-	// TODO: UserNoticeTags
+	@:generic
+	static function parseUserNotice<T>(msgParamParser:(Map<String, String>) -> T, tags:Map<String, String>) {
+		var retval:UserNoticeTags<T> = {};
+
+		for (k => v in tags)
+			switch (k) {
+				case "badge-info":
+					retval.badge_info = v.split(",").map(badge -> {
+						var split = v.split("/");
+						return {
+							type: split[0],
+							months: Std.parseInt(split[1])
+						};
+					});
+				case "badges":
+					retval.badges = v.split(",").map(badge -> {
+						var split = v.split("/");
+						return {
+							type: split[0],
+							version: Std.parseInt(split[1])
+						};
+					});
+				case "color":
+					retval.color = v;
+				case "display-name":
+					retval.display_name = v;
+				case "emotes":
+					retval.emotes = v.split(",").map(emote -> {
+						var emoteData = ~/(\n+):(\n+)-(\n+)/;
+						if (emoteData.match(emote))
+							return {
+								id: emoteData.matched(1),
+								from: Std.parseInt(emoteData.matched(2)),
+								to: Std.parseInt(emoteData.matched(3))
+							};
+						else
+							return {
+								id: "",
+								from: -1,
+								to: -1
+							};
+					});
+				case "id":
+					retval.id = v;
+				case "login":
+					retval.id = v;
+				case "mod":
+					retval.mod = v == "1";
+				case "msg-id":
+					retval.id = v;
+				case "room_id":
+					retval.room_id = v;
+				case "subscriber":
+					retval.subscriber = v == "1";
+				case "system-msg":
+					retval.system_msg = v;
+				case "tmi-sent-ts":
+					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v.substr(0, v.length - 3) + "." + v.substr(v.length - 3)));
+				case "turbo":
+					retval.turbo = v == "1";
+				case "user-id":
+					retval.user_id = v;
+				case "user-type":
+					retval.user_type = v;
+			}
+		retval.msg_param = msgParamParser(tags);
+
+		return retval;
+	}
 
 	static function parseUserState(tags:Map<String, String>) {
 		var retval:UserStateTags = {};
@@ -338,7 +492,7 @@ class ChatParser {
 		return retval;
 	}
 
-	public static function parse(message:String) {
+	public static function parse(message:String):ChatMessageType {
 		var type:Null<String> = null;
 		var tokens = message.split(" ");
 		for (token in tokens)
@@ -347,6 +501,31 @@ class ChatParser {
 				break;
 			}
 
-		switch (type) {}
+		switch (type) {
+			case "CLEARCHAT": return ClearChat(parseWithTags(tokens, parseClearChat));
+			case "CLEARMSG": return ClearMsg(parseWithTags(tokens, parseClearMsg));
+			case "GLOBALUSERSTATE": return GlobalUserState(parseWithTags(tokens, parseGlobalUserState));
+			case "NOTICE": return Notice(parseWithTags(tokens, parseNotice));
+			case "PRIVMSG": return Privmsg(parseWithTags(tokens, parsePrivmsg));
+			case "ROOMSTATE": return RoomState(parseWithTags(tokens, parseRoomState));
+			case "USERSTATE": return UserState(parseWithTags(tokens, parseUserState));
+			case "WHISPER": return Whisper(parseWithTags(tokens, parseWhisper));
+			
+			// case "USERNOTICE":
+			// 	var msgid = ~/msg-id:(.*)[,\s]/;
+			// 	if (msgid.match(message))
+			// 		switch (msgid.matched(1)) {
+			// 			//case "bitsbadgetier": return BitsTierUserNotice(parseWithTags, parseUserNotice)
+			// 			default: return GenericUserNotice(parseWithTags(tokens, parseUserNotice<ForOther>.bind(parseForOther)));
+			// 		}
+			// 		else return GenericUserNotice(parseWithTags(tokens, parseUserNotice<ForOther>.bind(parseForOther)));
+
+			case "JOIN": return Join(parseStandard(tokens));
+			case "PART": return Part(parseStandard(tokens));
+			case "PING": return Ping(parseStandard(tokens));
+			case "HOSTTARGET": return HostTarget(parseStandard(tokens));
+			// case "RECONNECT": return Reconnect(parseStandard(tokens));
+			default: return Other(parseStandard(tokens));
+		}
 	}
 }
