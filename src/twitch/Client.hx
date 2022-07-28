@@ -78,6 +78,9 @@ class Client {
 	/** The function to call when the client connects to the chat server and authentication has succeeded. **/
 	public var onChatConnect:Void->Void = null;
 
+	/** The function to call when the client is disconnected from the chat server. **/
+	public var onChatDisconnect:Void->Void = null;
+
 	/** The list of IRC listeners. **/
 	private var _irc_listen:Map<String, String->Void> = [];
 
@@ -339,7 +342,10 @@ class Client {
 
 						if (type == "PING")
 							_ircSend(StringTools.replace(message, "PING", "PONG"));
-						else if (_irc_listen.exists(type))
+						else if (type == "RECONNECT") {
+							trace("IRC server has requested the client to reconnect; doing so automatically");
+							chatConnect(name);
+						} else if (_irc_listen.exists(type))
 							_irc_listen[type](message);
 						else if (_irc_listen.exists("*"))
 							_irc_listen["*"](message);
@@ -359,6 +365,8 @@ class Client {
 			trace("Chat connection closed");
 			irc_isAnonymous = null;
 			_irc_ws = null;
+			if (onChatDisconnect != null)
+				onChatDisconnect();
 		}
 
 		trace("Starting connection");
