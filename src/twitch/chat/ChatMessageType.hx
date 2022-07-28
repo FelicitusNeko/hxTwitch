@@ -425,7 +425,7 @@ typedef UserNoticeTags<T> = {
 /** `msg_param` data for `bitsbadgetier` message types. **/
 typedef ForBitsBadgeTier = {
 	/** The tier of the Bits badge the user just earned. For example, 100, 1000, or 10000. **/
-	var threshold:Int;
+	var ?threshold:Int;
 }
 
 /** `msg_param` data for `giftpaidupgrade` and `anongiftpaidupgrade` message types. **/
@@ -458,7 +458,7 @@ typedef ForRaid = {
 /** `msg_param` data for `ritual` message types. **/
 typedef ForRitual = {
 	/** The name of the ritual being celebrated. Possible values are: `new_chatter`. **/
-	var ritual_name:String;
+	var ?ritual_name:String;
 }
 
 /** `msg_param` data for `sub` and `resub` USERNOTICE types. **/
@@ -494,13 +494,13 @@ typedef ForSubGift = {
 	/** Data pertaining to the recipient of the gift sub. **/
 	var ?recipient:{
 		/** The display name of the subscription gift recipient. **/
-		var display_name:String;
+		var ?display_name:String;
 
 		/** The user ID of the subscription gift recipient. **/
-		var id:String;
+		var ?id:String;
 
 		/** The user name of the subscription gift recipient. **/
-		var user_name:String;
+		var ?user_name:String;
 	}
 
 	/**
@@ -511,13 +511,13 @@ typedef ForSubGift = {
 		- 2000 — Second level of paid subscription
 		- 3000 — Third level of paid subscription
 	**/
-	var sub_plan:String;
+	var ?sub_plan:String;
 
 	/** The display name of the subscription plan. This may be a default name or one created by the channel owner. **/
-	var sub_plan_name:String;
+	var ?sub_plan_name:String;
 
 	/** The number of months gifted as part of a single, multi-month gift. **/
-	var gift_months:Int;
+	var ?gift_months:Int;
 }
 
 /** Reserved for `USERNOTICE` message types that do not have any additional `msg_param` information. **/
