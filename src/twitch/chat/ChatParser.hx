@@ -5,89 +5,131 @@ import twitch.chat.ChatMessageType;
 class ChatParser {
 	static function parseForBitsBadgeTier(tags:Map<String, String>) {
 		var retval:ForBitsBadgeTier = {};
-	
+
 		for (k => v in tags)
 			switch (k.substr(10)) {
-				case "threshold": retval.threshold = Std.parseInt(v);
+				case "threshold":
+					retval.threshold = Std.parseInt(v);
 			}
-	
+
 		return retval;
 	}
+
+	static function parseUserNoticeForBitsBadge(tags)
+		return parseUserNotice(parseForBitsBadgeTier, tags);
 
 	static function parseForGiftPaidUpgrade(tags:Map<String, String>) {
 		var retval:ForGiftPaidUpgrade = {};
-	
+
 		for (k => v in tags)
 			switch (k.substr(10)) {
-				case "promo-gift-total": retval.promo_gift_total = Std.parseInt(v);
-				case "promo-name": retval.promo_name = v;
-				case "sender-login": retval.sender_login = v;
-				case "sender-name": retval.sender_name = v;
+				case "promo-gift-total":
+					retval.promo_gift_total = Std.parseInt(v);
+				case "promo-name":
+					retval.promo_name = v;
+				case "sender-login":
+					retval.sender_login = v;
+				case "sender-name":
+					retval.sender_name = v;
 			}
-	
+
 		return retval;
 	}
+
+	static function parseUserNoticeForGiftPaidUpgrade(tags)
+		return parseUserNotice(parseForGiftPaidUpgrade, tags);
 
 	static function parseForRaid(tags:Map<String, String>) {
 		var retval:ForRaid = {};
-	
+
 		for (k => v in tags)
 			switch (k.substr(10)) {
-				case "displayName": retval.displayName = v;
-				case "login": retval.login = v;
-				case "viewerCount": retval.viewerCount = Std.parseInt(v);
+				case "displayName":
+					retval.displayName = v;
+				case "login":
+					retval.login = v;
+				case "viewerCount":
+					retval.viewerCount = Std.parseInt(v);
 			}
-	
+
 		return retval;
 	}
+
+	static function parseUserNoticeForRaid(tags)
+		return parseUserNotice(parseForRaid, tags);
 
 	static function parseForRitual(tags:Map<String, String>) {
 		var retval:ForRitual = {};
-	
+
 		for (k => v in tags)
 			switch (k.substr(10)) {
-				case "ritual-name": retval.ritual_name = v;
+				case "ritual-name":
+					retval.ritual_name = v;
 			}
-	
+
 		return retval;
 	}
+
+	static function parseUserNoticeForRitual(tags)
+		return parseUserNotice(parseForRitual, tags);
 
 	static function parseForSub(tags:Map<String, String>) {
 		var retval:ForSub = {};
-	
+
 		for (k => v in tags)
 			switch (k.substr(10)) {
-				case "cumulative-months": retval.cumulative_months = Std.parseInt(v);
-				case "should-share-streak": retval.should_share_streak = v=="1";
-				case "streak-months": retval.streak_months = Std.parseInt(v);
-				case "sub-plan": retval.sub_plan = v;
-				case "sub-plan-name": retval.sub_plan_name = v;
+				case "cumulative-months":
+					retval.cumulative_months = Std.parseInt(v);
+				case "should-share-streak":
+					retval.should_share_streak = v == "1";
+				case "streak-months":
+					retval.streak_months = Std.parseInt(v);
+				case "sub-plan":
+					retval.sub_plan = v;
+				case "sub-plan-name":
+					retval.sub_plan_name = v;
 			}
-	
+
 		return retval;
 	}
+
+	static function parseUserNoticeForSub(tags)
+		return parseUserNotice(parseForSub, tags);
 
 	static function parseForSubGift(tags:Map<String, String>) {
 		var retval:ForSubGift = {};
-	
-		for (k => v in tags){
-			if (StringTools.startsWith(k, "recipient")) retval.recipient = {};
+
+		for (k => v in tags) {
+			if (StringTools.startsWith(k, "recipient"))
+				retval.recipient = {};
 			switch (k.substr(10)) {
-				case "months": retval.months = Std.parseInt(v);
-				case "recipient-display-name": retval.recipient.display_name = v;
-				case "recipient-id": retval.recipient.id = v;
-				case "recipient-user-name": retval.recipient.user_name = v;
-				case "sub-plan": retval.sub_plan = v;
-				case "sub-plan-name": retval.sub_plan_name = v;
-				case "gift-months": retval.gift_months = Std.parseInt(v);
+				case "months":
+					retval.months = Std.parseInt(v);
+				case "recipient-display-name":
+					retval.recipient.display_name = v;
+				case "recipient-id":
+					retval.recipient.id = v;
+				case "recipient-user-name":
+					retval.recipient.user_name = v;
+				case "sub-plan":
+					retval.sub_plan = v;
+				case "sub-plan-name":
+					retval.sub_plan_name = v;
+				case "gift-months":
+					retval.gift_months = Std.parseInt(v);
 			}
-	}
+		}
 		return retval;
 	}
 
-	static function parseForOther(_:Map<String, String>) {
+	static function parseUserNoticeForSubGift(tags)
+		return parseUserNotice(parseForSubGift, tags);
+
+	static function parseForOther(_:Map<String, String>):ForOther
 		return null;
-	}
+
+	static function parseUserNoticeForOther(tags)
+		return parseUserNotice(parseForOther, tags);
 
 	static function parseClearChat(tags:Map<String, String>) {
 		var retval:ClearChatTags = {};
@@ -502,30 +544,57 @@ class ChatParser {
 			}
 
 		switch (type) {
-			case "CLEARCHAT": return ClearChat(parseWithTags(tokens, parseClearChat));
-			case "CLEARMSG": return ClearMsg(parseWithTags(tokens, parseClearMsg));
-			case "GLOBALUSERSTATE": return GlobalUserState(parseWithTags(tokens, parseGlobalUserState));
-			case "NOTICE": return Notice(parseWithTags(tokens, parseNotice));
-			case "PRIVMSG": return Privmsg(parseWithTags(tokens, parsePrivmsg));
-			case "ROOMSTATE": return RoomState(parseWithTags(tokens, parseRoomState));
-			case "USERSTATE": return UserState(parseWithTags(tokens, parseUserState));
-			case "WHISPER": return Whisper(parseWithTags(tokens, parseWhisper));
-			
-			// case "USERNOTICE":
-			// 	var msgid = ~/msg-id:(.*)[,\s]/;
-			// 	if (msgid.match(message))
-			// 		switch (msgid.matched(1)) {
-			// 			//case "bitsbadgetier": return BitsTierUserNotice(parseWithTags, parseUserNotice)
-			// 			default: return GenericUserNotice(parseWithTags(tokens, parseUserNotice<ForOther>.bind(parseForOther)));
-			// 		}
-			// 		else return GenericUserNotice(parseWithTags(tokens, parseUserNotice<ForOther>.bind(parseForOther)));
+			case "CLEARCHAT":
+				return ClearChat(parseWithTags(tokens, parseClearChat));
+			case "CLEARMSG":
+				return ClearMsg(parseWithTags(tokens, parseClearMsg));
+			case "GLOBALUSERSTATE":
+				return GlobalUserState(parseWithTags(tokens, parseGlobalUserState));
+			case "NOTICE":
+				return Notice(parseWithTags(tokens, parseNotice));
+			case "PRIVMSG":
+				return Privmsg(parseWithTags(tokens, parsePrivmsg));
+			case "ROOMSTATE":
+				return RoomState(parseWithTags(tokens, parseRoomState));
+			case "USERSTATE":
+				return UserState(parseWithTags(tokens, parseUserState));
+			case "WHISPER":
+				return Whisper(parseWithTags(tokens, parseWhisper));
 
-			case "JOIN": return Join(parseStandard(tokens));
-			case "PART": return Part(parseStandard(tokens));
-			case "PING": return Ping(parseStandard(tokens));
-			case "HOSTTARGET": return HostTarget(parseStandard(tokens));
-			// case "RECONNECT": return Reconnect(parseStandard(tokens));
-			default: return Other(parseStandard(tokens));
+			case "USERNOTICE":
+				var msgid = ~/msg-id:(.*)[,\s]/;
+				if (msgid.match(message))
+					switch (msgid.matched(1)) {
+						case "bitsbadgetier":
+							return BitsTierUserNotice(parseWithTags(tokens, parseUserNoticeForBitsBadge));
+						case "giftpaidupgrade" | "anongiftpaidupgrade":
+							return GiftUpgradeUserNotice(parseWithTags(tokens, parseUserNoticeForGiftPaidUpgrade));
+						case "raid":
+							return RaidUserNotice(parseWithTags(tokens, parseUserNoticeForRaid));
+						case "ritual":
+							return RitualUserNotice(parseWithTags(tokens, parseUserNoticeForRitual));
+						case "sub" | "resub":
+							return SubUserNotice(parseWithTags(tokens, parseUserNoticeForSub));
+						case "subgift":
+							return SubGiftUserNotice(parseWithTags(tokens, parseUserNoticeForSubGift));
+						default:
+							return GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
+					}
+				else
+					return GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
+
+			case "JOIN":
+				return Join(parseStandard(tokens));
+			case "PART":
+				return Part(parseStandard(tokens));
+			case "PING": // shouldn't happen, but in case it does
+				return Ping(parseStandard(tokens));
+			case "HOSTTARGET":
+				return HostTarget(parseStandard(tokens));
+			case "RECONNECT": // shouldn't happen, but in case it does
+				return Reconnect(parseStandard(tokens));
+			default:
+				return Other(type, parseStandard(tokens));
 		}
 	}
 }
