@@ -802,5 +802,5 @@ enum ChatMessageType {
 		Your client may receive other types of messages (most typically "numeric" messages) as replies to unknown commands or
 		standard boilerplate for connecting to the server or joining a channel.
 	**/
-	Other(msg:ParsedChatMessage);
+	Other(type: String, msg:ParsedChatMessage);
 }
