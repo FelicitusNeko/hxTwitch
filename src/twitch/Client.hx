@@ -10,6 +10,8 @@ import hx.ws.WebSocket;
 import twitch.chat.ChatSayType;
 import twitch.pubsub.PubSubIncomingMessage;
 
+using StringTools;
+
 /** The raw representation of data received from the API. **/
 typedef RawAPIResponse = {
 	/** The HTTP status code returned. **/
@@ -22,6 +24,9 @@ typedef RawAPIResponse = {
 /** The Twitch API, PubSub, and Chat client. **/
 class Client {
 	//------------- Statics
+
+	/** The URL for obtaining an OAuth key. **/
+	public static final oauthURL = "https://id.twitch.tv/oauth2/authorize";
 
 	/** The base URL for the API. **/
 	public static final baseURL = "https://api.twitch.tv/helix/";
@@ -101,6 +106,29 @@ class Client {
 			text += possible.charAt(Math.floor(Math.random() * possible.length));
 		return text;
 	}
+
+	/**
+		Generates an OAuth URL with the given set of scopes.
+		@param scopes The scopes to request.
+		@param redirectURI Optional. The URI to which the authorization page will redirect. Defaults to `http://localhost:3000`.
+		@return The URI to use for OAuth authorization.
+	**/
+	public function genOAuthURL(scopes:Array<String>, redirectURI = "http://locahost:3000") {
+		var queryStr:Array<String> = [];
+
+		for (k => v in [
+			"response_type" => "token",
+			"client_id" => _clientId,
+			"redirect_url" => redirectURI,
+			"scope" => scopes.join(" "),
+			"state" => _genNonce
+		])
+			queryStr.push(k.urlEncode() + "=" + v.urlEncode());
+		
+		return oauthURL + "?" + queryStr.join("&");
+	}
+
+	// TODO: listener for OAuth requests
 
 	//------------- API functions
 
