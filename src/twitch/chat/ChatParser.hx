@@ -246,6 +246,8 @@ class ChatParser {
 					retval.bits = Std.parseInt(v);
 				case "color":
 					retval.color = v;
+				case "custom-reward-id":
+					retval.custom_reward_id = v;
 				case "display-name":
 					retval.display_name = v;
 				case "emotes":
@@ -270,6 +272,8 @@ class ChatParser {
 					retval.id = v;
 				case "mod":
 					retval.mod = v == "1";
+				case "msg-id":
+					retval.msg_id = v;
 				case "reply-parent-msg-id":
 					retval.reply_parent.msg_id = v;
 				case "reply-parent-user-id":
@@ -484,18 +488,19 @@ class ChatParser {
 		var retval:ParsedChatMessageWith<T> = {
 			rawMessage: tokens.join(" ")
 		};
+		var typeParsed = false;
 
 		for (i => token in tokens) {
-			var typeParsed = false;
 			switch (token.charAt(0)) {
 				case ":":
-					if (typeParsed) {
+					if (retval.origin == null)
+						retval.origin = token.substr(1);
+					else {
 						retval.params = tokens.slice(i).join(" ").substr(1);
 						break;
-					} else
-						retval.origin = token.substr(1);
+					}
 				case "@":
-					var subtokens = token.substr(1).split("=");
+					var subtokens = token.substr(1).split(";");
 					var tags:Map<String, String> = [];
 					for (subtoken in subtokens) {
 						var firstEqual = subtoken.indexOf("=");
@@ -503,7 +508,10 @@ class ChatParser {
 					}
 					retval.tags = tagParser(tags);
 				default:
-					typeParsed = true;
+					if (typeParsed)
+						retval.destination = token;
+					else
+						typeParsed = true;
 			}
 		}
 
@@ -514,20 +522,24 @@ class ChatParser {
 		var retval:ParsedChatMessage = {
 			rawMessage: tokens.join(" ")
 		};
+		var typeParsed = false;
 
 		for (i => token in tokens) {
-			var typeParsed = false;
 			switch (token.charAt(0)) {
 				case ":":
-					if (typeParsed) {
+					if (retval.origin == null)
+						retval.origin = token.substr(1);
+					else {
 						retval.params = tokens.slice(i).join(" ").substr(1);
 						break;
-					} else
-						retval.origin = token.substr(1);
+					}
 				case "@":
-					trace("@ found in message data; may be parsing out tags as a result");
+					trace("Warning: @ found in message data; may be ignoring tags as a result");
 				default:
-					typeParsed = true;
+					if (typeParsed)
+						retval.destination = token;
+					else
+						typeParsed = true;
 			}
 		}
 

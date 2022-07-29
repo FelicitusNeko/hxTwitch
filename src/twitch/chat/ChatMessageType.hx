@@ -8,6 +8,9 @@ typedef ParsedChatMessage = {
 	/** The origin of the message. **/
 	var ?origin:String;
 
+	/** The destination of the message. **/
+	var ?destination:String;
+
 	/** The message parameters. **/
 	var ?params:String;
 }
@@ -23,6 +26,9 @@ typedef ParsedChatMessageWith<T> = {
 
 	/** The origin of the message. **/
 	var ?origin:String;
+
+	/** The destination of the message. **/
+	var ?destination:String;
 
 	/** The message parameters. **/
 	var ?params:String;
@@ -189,6 +195,9 @@ typedef PrivmsgTags = {
 	/** The color of the user’s name in the chat room. This is a hexadecimal RGB color code in the form, #<RGB>. This tag may be empty if it is never set. **/
 	var ?color:String;
 
+	/** A string that indicates which custom reward, if any, is associated to this message. **/
+	var ?custom_reward_id:String;
+
 	/** The user’s display name, escaped as described in the [IRCv3 spec](https://ircv3.net/specs/core/message-tags-3.2.html). This tag may be empty if it is never set. **/
 	var ?display_name:String;
 
@@ -219,6 +228,9 @@ typedef PrivmsgTags = {
 
 	/** A Boolean value that determines whether the user is a moderator. **/
 	var ?mod:Bool;
+
+	/** A string that indicates what type of message this is. Used for `highlighted_message`. **/
+	var ?msg_id:String;
 
 	/** A Boolean value that determines whether the user has returned after a long absence. (This is speculation; no official documentation for this tag.) **/
 	var ?returning_chatter:Bool;
