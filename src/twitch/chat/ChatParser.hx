@@ -143,7 +143,7 @@ class ChatParser {
 				case "target-user-id":
 					retval.target_user_id = v;
 				case "tmi-sent-ts":
-					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v.substr(0, v.length - 3) + "." + v.substr(v.length - 3)));
+					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v));
 			}
 
 		return retval;
@@ -161,7 +161,7 @@ class ChatParser {
 				case "target-msg-id":
 					retval.target_msg_id = v;
 				case "tmi-sent-ts":
-					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v.substr(0, v.length - 3) + "." + v.substr(v.length - 3)));
+					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v));
 			}
 
 		return retval;
@@ -291,7 +291,7 @@ class ChatParser {
 				case "subscriber":
 					retval.subscriber = v == "1";
 				case "tmi-sent-ts":
-					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v.substr(0, v.length - 3) + "." + v.substr(v.length - 3)));
+					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v));
 				case "turbo":
 					retval.turbo = v == "1";
 				case "user-id":
@@ -382,7 +382,7 @@ class ChatParser {
 				case "system-msg":
 					retval.system_msg = v;
 				case "tmi-sent-ts":
-					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v.substr(0, v.length - 3) + "." + v.substr(v.length - 3)));
+					retval.tmi_sent_ts = Date.fromTime(Std.parseFloat(v));
 				case "turbo":
 					retval.turbo = v == "1";
 				case "user-id":
