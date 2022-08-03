@@ -158,13 +158,14 @@ class APIBuilder {
 				var field:Field = {
 					name: param.get("name"),
 					kind: switch (param.get("type")) {
-						case "string": FVar(optional ? (forRetval ? (macro:Null<String>) : (macro:?String)) : macro:String);
-						case "int": FVar(optional ? (macro:?Int) : macro:Int);
-						case "bool": FVar(optional ? (macro:?Bool) : macro:Bool);
+						case "string": FVar(macro:String);
+						case "int": FVar(macro:Int);
+						case "bool": FVar(macro:Bool);
 						case "object": FVar(buildAnonymous(param));
 						case x: Context.error("Unknown type " + x, Context.currentPos());
 					},
-					pos: Context.currentPos()
+					pos: Context.currentPos(),
+          meta: optional ? [{name:":optional", pos:Context.currentPos()}] : null
 				}
         trace(field.kind);
 
