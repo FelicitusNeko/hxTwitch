@@ -1,5 +1,6 @@
 package twitch.api;
 
+import haxe.Exception;
 import haxe.http.HttpMethod;
 import haxe.Json;
 
@@ -30,8 +31,16 @@ abstract class APIEndpoint {
 	public static var endpoint:String;
 
 	@:generic
-	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Map<String, Dynamic>, ?data:Dynamic):APIResponse<R> {
-		var apidata = client.call(method, endpoint, query, data != null ? Json.stringify(data) : null);
+	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Dynamic, ?data:Dynamic):APIResponse<R> {
+		if (query != null && !Reflect.isObject(query)) throw new Exception("Query data is not an object");
+
+		var queryMap:Map<String, Dynamic> = query == null ? null : [];
+		if (query != null)
+			for (key in Reflect.fields(query))
+				if (Reflect.field(query, key) != null)
+					queryMap.set(key, Reflect.field(query, key));
+		
+		var apidata = client.call(method, endpoint, queryMap, data != null ? Json.stringify(data) : null);
 
 		var retval:APIResponse<R> = {};
 
