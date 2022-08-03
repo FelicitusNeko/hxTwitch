@@ -93,6 +93,7 @@ class APIBuilder {
 				for (node in endpoint)
 					switch (node.nodeType) {
 						case Element:
+              trace("Building " + node.nodeName);
 							switch (node.nodeName) {
 								case x = "query" | "request":
 									if (x == "query")
@@ -144,13 +145,15 @@ class APIBuilder {
 				fields.push(func);
 			}
 
+    trace("Done");
 		return fields;
 	}
 
-	public static function buildAnonymous(node:Xml, forRetval = true) {
+	public static function buildAnonymous(node:Xml, forRetval = false) {
 		var retval:Array<Field> = [];
 		for (param in node)
 			if (param.nodeType == Element) {
+        trace(param);
 				var optional = truthy.contains(param.get("optional"));
 				var field:Field = {
 					name: param.get("name"),
@@ -163,6 +166,7 @@ class APIBuilder {
 					},
 					pos: Context.currentPos()
 				}
+        trace(field.kind);
 
 				for (member in param)
 					if (member.nodeType == PCData && member.nodeValue != null) {
