@@ -90,41 +90,53 @@ class APIBuilder {
 
 				var hasQuery = false, hasBody = false;
 
-				for (node in endpoint) {
-					if (node.nodeType == Element)
-						switch (node.nodeName) {
-							case x = "query" | "request":
-								if (x == "query")
-									hasQuery = true;
-								else
-									hasBody = true;
+				for (node in endpoint)
+					switch (node.nodeType) {
+						case Element:
+							switch (node.nodeName) {
+								case x = "query" | "request":
+									if (x == "query")
+										hasQuery = true;
+									else
+										hasBody = true;
 
-								args.push({
-									name: x,
-									type: buildAnonymous(node)
-								});
-							case "response":
-								funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(node, true))], pack: []});
-							default:
-						}
-				}
+									args.push({
+										name: x,
+										type: buildAnonymous(node)
+									});
+								case "response":
+									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(node, true))], pack: []});
+								default:
+							}
+						case PCData:
+							if (node.nodeValue != null) {
+								if (func.doc == null)
+									func.doc = "";
+								func.doc += node.nodeValue;
+							}
+						default:
+					}
 
 				if (hasBody) {
 					if (hasQuery)
 						funcdef.expr = macro {
+							trace("Calling endpoint with query and request");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>), request);
 						}
 					else
 						funcdef.expr = macro {
+							trace("Calling endpoint with request only");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, [], request);
 						}
 				} else {
 					if (hasQuery)
 						funcdef.expr = macro {
-							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, query);
+							trace("Calling endpoint with query only");
+							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>));
 						}
 					else
 						funcdef.expr = macro {
+							trace("Calling endpoint with no data");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client);
 						}
 				}
@@ -153,7 +165,7 @@ class APIBuilder {
 				}
 
 				for (member in param)
-					if (member.nodeType == PCData) {
+					if (member.nodeType == PCData && member.nodeValue != null) {
 						if (field.pos == null)
 							field.doc = "";
 						field.doc += member.nodeValue.trim();
