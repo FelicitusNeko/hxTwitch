@@ -21,11 +21,23 @@ typedef RawAPIResponse = {
 	var ?text:String;
 }
 
+/** Response data for a successful app access token request. **/
+typedef AppAccessResponse = {
+	/** The app access token. **/
+	var access_token:String;
+	/** The number of seconds until the token expires. **/
+	var expires_in:Int;
+	/** The type of token, usually `"bearer"`. **/
+	var token_type:String;
+}
+
 /** The Twitch API, PubSub, and Chat client. **/
 class Client {
 	//------------- Statics
+	/** The URL for obtaining an app access token. **/
+	public static final appAccessURL = "https://id.twitch.tv/oauth2/token";
 
-	/** The URL for obtaining an OAuth key. **/
+	/** The URL for obtaining an OAuth token. **/
 	public static final oauthURL = "https://id.twitch.tv/oauth2/authorize";
 
 	/** The base URL for the API. **/
@@ -46,7 +58,10 @@ class Client {
 	/** The client secret (similar to password) for this client. **/
 	private var _clientSecret = "";
 
-	/** The OAuth key for this client, which determines what it has access to. Externally write-only. **/
+	/** Write-only. The app access token for this client, which allows it to access certain endpoints where explicit permission is not required. **/
+	public var _appToken(null, default):Null<String> = null;
+
+	/** Write-only. The OAuth key for this client, which determines what it has access to. **/
 	public var _oauthKey(null, default):Null<String> = null;
 
 	/** Generates a random 16-character nonce. **/
@@ -146,17 +161,22 @@ class Client {
 		var req = new Http(url);
 		var code = -1;
 
+		trace(url, method, query, data);
+
 		req.onStatus = codeIn -> code = codeIn;
 		req.onError = error -> throw new Exception(error);
 
 		req.addHeader("Client-Id", _clientId);
 		if (_oauthKey != null)
 			req.addHeader("Authorization", "OAuth " + _oauthKey);
-		else
-			req.addHeader("Authorization", "Bearer " + _clientSecret);
+		else if (_appToken != null)
+			req.addHeader("Authorization", "Bearer " + _appToken);
+		else throw new Exception("No authentication key provided");
+
 		if (query != null)
 			for (k => v in query)
-				req.addParameter(k, Std.string(v));
+				if (v != null)
+					req.addParameter(k, Std.string(v));
 
 		if (data != null) {
 			req.addHeader("Content-Type", "application/json");
@@ -174,6 +194,34 @@ class Client {
 			code: code,
 			text: code == 204 ? null : retval.getBytes().toString()
 		};
+	}
+
+	public function getAppAccessToken() {
+		var req = new Http(appAccessURL);
+		var postStr:Array<String> = [];
+		var code = -1;
+		var response:AppAccessResponse = null;
+
+		for (k => v in [
+			"client_id" => _clientId,
+			"client_secret" => _clientSecret,
+			"grant_type" => "client_credentials"
+		])
+			postStr.push(k.urlEncode() + "=" + v.urlEncode());
+
+		req.addHeader("Content-Type", "application/x-www-form-urlencoded");
+		//trace(postStr.join("&"));
+		req.setPostData(postStr.join("&"));
+
+		req.onStatus = codeIn -> code = codeIn;
+		req.onError = error -> throw new Exception(error);
+		req.onData = data -> response = Json.parse(data);
+
+		req.request(true);
+
+		if (response != null) _appToken = response.access_token;
+
+		return response;
 	}
 
 	//------------- PubSub functions
