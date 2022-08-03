@@ -1,0 +1,66 @@
+<!--
+ Copyright 2022 FelicitusNeko
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+     http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<TwitchAPI>
+
+  <collection name="ads">
+    <endpoint name="StartCommercial" method="Post" path="channels/commercial" scope="channel:edit:commercial">
+      Starts a commercial on a specified channel.
+      <request>
+        <param name="broadcaster_id" type="string">
+          ID of the channel requesting a commercial
+          Minimum: 1 Maximum: 1
+        </param>
+        <param name="length" type="int">
+          Desired length of the commercial in seconds. 
+          Valid options are 30, 60, 90, 120, 150, 180.
+        </param>
+      </request>
+      <response>
+        <param name="length" type="int">
+          Length of the triggered commercial
+        </param>
+        <param name="message" type="string">
+          Provides contextual information on why the request failed
+        </param>
+        <param name="retry_after" type="string">
+          Seconds until the next commercial can be served on this channel
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="users">
+    <endpoint name="GetUsers" path="users">
+      <query>
+        <param name="id" type="string" optional="1" />
+        <param name="login" type="string" optional="1" />
+      </query>
+      <response>
+        <param name="id" type="string" />
+        <param name="login" type="string" />
+        <param name="display_name" type="string" />
+        <param name="type" type="string" />
+        <param name="broadcaster_type" type="string" />
+        <param name="description" type="string" />
+        <param name="profile_image_url" type="string" />
+        <param name="offline_image_url" type="string" />
+        <param name="view_count" type="int" />
+        <param name="email" type="string" optional="1" />
+        <param name="created_at" type="string" />
+      </response>
+    </endpoint>
+  </collection>
+</TwitchAPI>
