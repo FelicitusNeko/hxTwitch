@@ -46,6 +46,8 @@ class APIBuilder {
 		var defsFile = Path.join([Path.directory(Context.getPosInfos(Context.currentPos()).file), "Definition.xml"]);
 		var collections = Xml.parse(File.getContent(defsFile)).firstElement().elementsNamed("collection");
 		var def:Xml = null;
+    var endpointCount = 0;
+
 		for (node in collections)
 			if (node.get("name") == collection) {
 				def = node;
@@ -55,6 +57,7 @@ class APIBuilder {
 		var epList:Array<String> = [];
 		if (def != null)
 			for (endpoint in def.elementsNamed("endpoint")) {
+        endpointCount++;
 				var epName = endpoint.get("name");
 				if (epName == null) {
 					Context.warning("Unnamed endpoint in collection " + def.get("name"), Context.currentPos());
@@ -93,7 +96,7 @@ class APIBuilder {
 				for (node in endpoint)
 					switch (node.nodeType) {
 						case Element:
-              trace("Building " + node.nodeName);
+              //trace("Building " + node.nodeName);
 							switch (node.nodeName) {
 								case x = "query" | "request":
 									if (x == "query")
@@ -121,23 +124,23 @@ class APIBuilder {
 				if (hasBody) {
 					if (hasQuery)
 						funcdef.expr = macro {
-							trace("Calling endpoint with query and request");
+							//trace("Calling endpoint with query and request");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>), request);
 						}
 					else
 						funcdef.expr = macro {
-							trace("Calling endpoint with request only");
-							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, [], request);
+							//trace("Calling endpoint with request only");
+							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, null, request);
 						}
 				} else {
 					if (hasQuery)
 						funcdef.expr = macro {
-							trace("Calling endpoint with query only");
+							//trace("Calling endpoint with query only");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>));
 						}
 					else
 						funcdef.expr = macro {
-							trace("Calling endpoint with no data");
+							//trace("Calling endpoint with no data");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client);
 						}
 				}
@@ -145,7 +148,9 @@ class APIBuilder {
 				fields.push(func);
 			}
 
-    trace("Done");
+    #if debug
+    trace('Populated collection $collection with $endpointCount endpoint(s)');
+    #end
 		return fields;
 	}
 
@@ -153,7 +158,7 @@ class APIBuilder {
 		var retval:Array<Field> = [];
 		for (param in node)
 			if (param.nodeType == Element) {
-        trace(param);
+        //trace(param);
 				var optional = truthy.contains(param.get("optional"));
 				var field:Field = {
 					name: param.get("name"),
@@ -167,7 +172,7 @@ class APIBuilder {
 					pos: Context.currentPos(),
           meta: optional ? [{name:":optional", pos:Context.currentPos()}] : null
 				}
-        trace(field.kind);
+        //trace(field.kind);
 
 				for (member in param)
 					if (member.nodeType == PCData && member.nodeValue != null) {
