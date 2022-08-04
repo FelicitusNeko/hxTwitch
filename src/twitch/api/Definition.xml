@@ -19,7 +19,7 @@
     <endpoint name="StartCommercial" method="Post" path="channels/commercial" scope="channel:edit:commercial">
       Starts a commercial on a specified channel.
       <request>
-        <param name="broadcaster_id" type="string">
+        <param name="broadcaster_id">
           ID of the channel requesting a commercial
           Minimum: 1 Maximum: 1
         </param>
@@ -32,11 +32,456 @@
         <param name="length" type="int">
           Length of the triggered commercial
         </param>
-        <param name="message" type="string">
+        <param name="message">
           Provides contextual information on why the request failed
         </param>
-        <param name="retry_after" type="string">
+        <param name="retry_after">
           Seconds until the next commercial can be served on this channel
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="analytics">
+    <endpoint name="GetExtensionAnalytics" path="analytics/extensions" scope="analytics:read:extensions">
+      Gets a URL that Extension developers can use to download analytics reports (CSV files) for their Extensions. The URL is valid for 5 minutes.
+
+      If you specify a future date, the response will be “Report Not Found For Date Range.” If you leave both `started_at` and `ended_at` blank, the API returns the most recent date of data.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without `extension_id`. If an `extension_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. The report covers the entire ending date; e.g., if `2018-05-01T00:00:00Z` is specified, the report covers up to `2018-05-01T23:59:59Z`.
+
+          If this is provided, `started_at` also must be specified. If `ended_at` is later than the default end date, the default date is used. Default: 1-2 days before the request was issued (depending on report availability).
+        </param>
+        <param name="extension_id" optional="1">
+          Client ID value assigned to the extension when it is created. If this is specified, the returned URL points to an analytics report for just the specified extension. If this is not specified, the response includes multiple URLs (paginated), pointing to separate analytics reports for each of the authenticated user's Extensions.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. This must be on or after January 31, 2018.
+
+          If this is provided, `ended_at` also must be specified. If `started_at` is earlier than the default start date, the default date is used.  The file contains one row of data per day.
+        </param>
+        <param name="type" optional="1">
+          Type of analytics report that is returned. Currently, this field has no affect on the response as there is only one report type. If additional types were added, using this field would return only the URL for the specified report. Limit: 1. Valid values: `"overview_v2"`.
+        </param>
+      </query>
+      <response>
+        <param name="extension_id">
+          ID of the extension whose analytics data is being provided.
+        </param>
+        <param name="URL">
+          URL to the downloadable CSV file containing analytics data. Valid for 5 minutes.
+        </param>
+        <param name="type">
+          Type of report.
+        </param>
+        <param name="date_range" type="object">
+          <param name="started_at">
+            Report start date/time. Note this may differ from (be later than) the `started_at` value in the request; the response value is the date when data for the extension is available.
+          </param>
+          <param name="ended_at">
+            Report end date/time.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGameAnalytics" path="analytics/games" scope="analytics:read:games">
+      Gets a URL that game developers can use to download analytics reports (CSV files) for their games. The URL is valid for 5 minutes. For detail about analytics and the fields returned, see the Insights &amp; Analytics guide.
+
+      The response has a JSON payload with a `data` field containing an array of games information elements and can contain a `pagination` field containing information required to query for more streams.
+
+      If you specify a future date, the response will be “Report Not Found For Date Range.” If you leave both `started_at` and `ended_at` blank, the API returns the most recent date of data.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without `extension_id`. If an `extension_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. The report covers the entire ending date; e.g., if `2018-05-01T00:00:00Z` is specified, the report covers up to `2018-05-01T23:59:59Z`.
+
+          If this is provided, `started_at` also must be specified. If `ended_at` is later than the default end date, the default date is used. Default: 1-2 days before the request was issued (depending on report availability).
+        </param>
+        <param name="game_id" optional="1">
+          Game ID. If this is specified, the returned URL points to an analytics report for just the specified game. If this is not specified, the response includes multiple URLs (paginated), pointing to separate analytics reports for each of the authenticated user's games.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. This must be on or after January 31, 2018.
+
+          If this is provided, `ended_at` also must be specified. If `started_at` is earlier than the default start date, the default date is used.  The file contains one row of data per day.
+        </param>
+        <param name="type" optional="1">
+          Type of analytics report that is returned. Currently, this field has no affect on the response as there is only one report type. If additional types were added, using this field would return only the URL for the specified report. Limit: 1. Valid values: `"overview_v2"`.
+        </param>
+      </query>
+      <response>
+        <param name="game_id">
+          ID of the game whose analytics data is being provided.
+        </param>
+        <param name="URL">
+          URL to the downloadable CSV file containing analytics data. Valid for 5 minutes.
+        </param>
+        <param name="type">
+          Type of report.
+        </param>
+        <param name="date_range" type="object">
+          <param name="started_at">
+            Report start date/time. Note this may differ from (be later than) the `started_at` value in the request; the response value is the date when data for the extension is available.
+          </param>
+          <param name="ended_at">
+            Report end date/time.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="bits">
+    <endpoint name="GetBitsLeaderboard" scope="bits:read" path="bits/leaderboard">
+      Gets a ranked list of Bits leaderboard information for an authorized broadcaster.
+      <query>
+        <param name="count" type="int" optional="1">
+          Number of results to be returned. Maximum: 100. Default: 10.
+        </param>
+        <param name="period" optional="1">
+          Time period over which data is aggregated (PST time zone). This parameter interacts with `started_at`. Valid values follow. Default: `"all"`.
+          - `"day"` – 00:00:00 on the day specified in `started_at`, through 00:00:00 on the following day.
+          - `"week"` – 00:00:00 on Monday of the week specified in `started_at`, through 00:00:00 on the following Monday.
+          - `"month"` – 00:00:00 on the first day of the month specified in `started_at`, through 00:00:00 on the first day of the following month.
+          - `"year"` – 00:00:00 on the first day of the year specified in `started_at`, through 00:00:00 on the first day of the following year.
+          - `"all"` – The lifetime of the broadcaster's channel. If this is specified (or used by default), `started_at` is ignored.
+        </param>
+        <param name="started_at" optional="1">
+          Timestamp for the period over which the returned data is aggregated. Must be in RFC 3339 format. If this is not provided, data is aggregated over the current period; e.g., the current day/week/month/year. This value is ignored if `period` is `"all"`.
+
+          Any `+` operator should be URL encoded.
+
+          Currently, the HH:MM:SS part of this value is used only to identify a given day in PST and otherwise ignored. For example, if the `started_at` value resolves to 5PM PST yesterday and `period` is `"day"`, data is returned for all of yesterday.
+        </param>
+        <param name="user_id" optional="1">
+          ID of the user whose results are returned; i.e., the person who paid for the Bits.
+
+          As long as `count` is greater than 1, the returned data includes additional users, with Bits amounts above and below the user specified by `user_id`.
+
+          If `user_id` is not provided, the endpoint returns the Bits leaderboard data across top users (subject to the value of `count`).
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          ID of the user (viewer) in the leaderboard entry.
+        </param>
+        <param name="user_login">
+          User login name.
+        </param>
+        <param name="user_name">
+          Display name corresponding to `user_id`.
+        </param>
+        <param name="rank" type="int">
+          Leaderboard rank of the user.
+        </param>
+        <param name="score" type="int">
+          Leaderboard score (number of Bits) of the user.
+        </param>
+      </response>
+    </endpoint>
+    <!-- TODO: GetCheermotes -->
+    <endpoint name="GetExtensionTransactions" path="extensions/transactions">
+      Gets the list of Extension transactions for a given Extension. This allows Extension back-end servers to fetch a list of transactions that have occurred for their Extension across all of Twitch. A transaction is a record of a user exchanging Bits for an in-Extension digital good.
+      <query>
+        <param name="extension_id">
+          ID of the Extension to list transactions for.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          Transaction IDs to look up. Can include multiple to fetch multiple transactions in a single request.
+
+          For example, `/helix/extensions/transactions?extension_id=1234&amp;id=1&amp;id=2&amp;id=3`
+
+          Maximum: 100.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to fetch the next page of data. This only applies to queries without ID. If an ID is specified, it supersedes the cursor.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 100. Default: 20.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Unique identifier of the Bits-in-Extensions transaction.
+        </param>
+        <param name="timestamp">
+          UTC timestamp when this transaction occurred.
+        </param>
+        <param name="broadcaster_id">
+          Twitch user ID of the channel the transaction occurred on.
+        </param>
+        <param name="broadcaster_login">
+          Login name of the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          Twitch display name of the broadcaster.
+        </param>
+        <param name="user_id">
+          Twitch user ID of the user who generated the transaction.
+        </param>
+        <param name="user_login">
+          Login name of the user who generated the transaction.
+        </param>
+        <param name="user_name">
+          Twitch display name of the user who generated the transaction.
+        </param>
+        <param name="product_type">
+          Enum of the product type. Currently only `BITS_IN_EXTENSION`.
+        </param>
+        <param name="product_data" type="object">
+          Represents the product acquired, as it looked at the time of the transaction.
+          <param name="domain">
+            Set to twitch.ext + your Extension ID.            
+          </param>
+          <param name="sku">
+            Unique identifier for the product across the Extension.
+          </param>
+          <param name="cost" type="object">
+            Represents the cost to acquire the product.
+            <param name="amount" type="int">
+              Number of Bits required to acquire the product.
+            </param>
+            <param name="type">
+              Identifies the contribution method. Currently only `bits`.
+            </param>
+          </param>
+          <param name="inDevelopment" type="bool">
+            Indicates if the product is in development.
+          </param>
+          <param name="displayName">
+            Display name of the product.
+          </param>
+          <param name="expiration">
+            Always empty since only unexpired products can be purchased.
+          </param>
+          <param name="broadcast" type="bool">
+            Indicates whether or not the data was sent over the Extension PubSub to all instances of the Extension.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="channels">
+    <endpoint name="GetChannelInformation" path="channels">
+      Gets channel information for users.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose channel you want to get. To specify more than one ID, include this parameter for each broadcaster you want to get. For example, `broadcaster_id=1234&amp;broadcaster_id=5678`. You may specify a maximum of 100 IDs.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          Twitch User ID of this channel owner.
+        </param>
+        <param name="broadcaster_login">
+          Broadcaster's user login name.
+        </param>
+        <param name="broadcaster_name">
+          Twitch user display name of this channel owner.
+        </param>
+        <param name="game_name">
+          Name of the game being played on the channel.
+        </param>
+        <param name="game_id">
+          Current game ID being played on the channel.
+        </param>
+        <param name="broadcaster_language">
+          Language of the channel. A language value is either the ISO 639-1 two-letter code for a supported stream language or “other”.
+        </param>
+        <param name="title">
+          Title of the stream.
+        </param>
+        <param name="delay" type="int">
+          Stream delay in seconds.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="ModifyChannelInformation" scope="channel:manage:broadcast" method="Patch" path="channels">
+      Modifies channel information for users.
+      <query>
+        <param name="broadcaster_id">
+          ID of the channel to be updated
+        </param>
+      </query>
+      <request>
+        <param name="game_id" optional="1">
+          The current game ID being played on the channel. Use “0” or “” (an empty string) to unset the game.
+        </param>
+        <param name="broadcaster_name" optional="1">
+          The language of the channel. A language value must be either the ISO 639-1 two-letter code for a supported stream language or “other”.
+        </param>
+        <param name="title" optional="1">
+          The title of the stream. Value must not be an empty string.
+        </param>
+        <param name="delay" type="int" optional="1">
+          Stream delay in seconds. Stream delay is a Twitch Partner feature; trying to set this value for other account types will return a 400 error.
+        </param>
+      </request>
+    </endpoint>
+    <endpoint name="GetChannelEditors" scope="channel:read:editors" path="channels/editors">
+      Gets a list of users who have editor permissions for a specific channel.
+      <query>
+        <param name="broadcaster_id">
+          Broadcaster’s user ID associated with the channel.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of the editor.
+        </param>
+        <param name="user_name">
+          Display name of the editor.
+        </param>
+        <param name="created_at">
+          Date and time the editor was given editor permissions.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="channel_points">
+    <endpoint name="CreateCustomRewards" scope="channel:manage:redemptions" method="Post" path="channel_points/custom_rewards">
+      Creates a Custom Reward on a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+      </query>
+      <request>
+        <param name="title">
+          The title of the reward.
+        </param>
+        <param name="cost" type="int">
+          The cost of the reward.
+        </param>
+        <param name="prompt" optional="1">
+          The prompt for the viewer when redeeming the reward.
+        </param>
+        <param name="is_enabled" type="bool" optional="1">
+          Is the reward currently enabled, if false the reward won't show up to viewers. Default: true
+        </param>
+        <param name="background_color" optional="1">
+          Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+        </param>
+        <param name="is_user_input_required" type="bool" optional="1">
+          Does the user need to enter information when redeeming the reward. Default: false.
+        </param>
+        <param name="is_max_per_stream_enabled" type="bool" optional="1">
+          Whether a maximum per stream is enabled. Default: false.
+        </param>
+        <param name="max_per_stream" type="int" optional="1">
+          The maximum number per stream if enabled. Required when any value of `is_max_per_stream_enabled` is included.
+        </param>
+        <param name="is_max_per_user_per_stream_enabled" type="bool" optional="1">
+          Whether a maximum per user per stream is enabled. Default: false.
+        </param>
+        <param name="max_per_user_per_stream" type="int" optional="1">
+          The maximum number per user per stream if enabled. Required when any value of `is_max_per_user_per_stream_enabled` is included.
+        </param>
+        <param name="is_global_cooldown_enabled" type="bool" optional="1">
+          Whether a cooldown is enabled. Default: false.
+        </param>
+        <param name="global_cooldown_seconds" type="int" optional="1">
+          The cooldown in seconds if enabled. Required when any value of `is_global_cooldown_enabled` is included.
+        </param>
+        <param name="should_redemptions_skip_request_queue" type="bool" optional="1">
+          Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status. Default: false.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          ID of the channel the reward is for.
+        </param>
+        <param name="broadcaster_login">
+          Broadcaster's user login name.
+        </param>
+        <param name="broadcaster_name">
+          Display name of the channel the reward is for.
+        </param>
+        <param name="id">
+          ID of the reward.
+        </param>
+        <param name="image" type="object" optional="1">
+          Set of custom images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }, can be null if no images have been uploaded
+          <!-- TODO: "common_object" type to compose this sort of thing that shows up in multiple places -->
+        </param>
+        <param name="background_color">
+          Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+        </param>
+        <param name="is_enabled" type="bool">
+          Is the reward currently enabled, if false the reward won't show up to viewers
+        </param>
+        <param name="cost" type="int">
+          The cost of the reward.
+        </param>
+        <param name="title">
+          The title of the reward.
+        </param>
+        <param name="prompt">
+          The prompt for the viewer when they are redeeming the reward.
+        </param>
+        <param name="max_per_stream_setting" type="object">
+          Whether a maximum per stream is enabled and what the maximum is.
+          <param name="is_enabled">
+            Whether this setting is enabled.
+          </param>
+          <param name="max_per_stream" type="int">
+            The maximum number per stream if enabled.
+          </param>
+        </param>
+        <param name="max_per_user_per_stream_setting" type="object">
+          Whether a maximum per user per stream is enabled and what the maximum is.
+          <param name="is_enabled">
+            Whether this setting is enabled.
+          </param>
+          <param name="max_per_user_per_stream" type="int">
+            The maximum number per user per stream if enabled.
+          </param>
+        </param>
+        <param name="global_cooldown_setting" type="object">
+          Whether a cooldown is enabled and what the cooldown is.
+          <param name="is_enabled">
+            Whether this setting is enabled.
+          </param>
+          <param name="global_cooldown_seconds" type="int">
+            The cooldown in seconds if enabled.
+          </param>
+        </param>
+        <param name="is_paused" type="bool">
+          Is the reward currently paused, if true viewers can't redeem
+        </param>
+        <param name="is_in_stock" type="bool">
+          Is the reward currently in stock, if false viewers can't redeem
+        </param>
+        <param name="default_image" type="object">
+          Set of default images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }
+          <!-- TODO: "common_object" type to compose this sort of thing that shows up in multiple places -->
+        </param>
+        <param name="should_redemptions_skip_request_queue" type="bool">
+          Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status.
+        </param>
+        <param name="redemptions_redeemed_current_stream" type="int" optional="1">
+          The number of redemptions redeemed during the current live stream. Counts against the max_per_stream_setting limit. Null if the broadcasters stream isn't live or max_per_stream_setting isn't enabled.
+        </param>
+        <param name="cooldown_expires_at" optional="1">
+          Timestamp of the cooldown expiration. Null if the reward isn't on cooldown.
         </param>
       </response>
     </endpoint>
@@ -45,21 +490,21 @@
   <collection name="users">
     <endpoint name="GetUsers" path="users">
       <query>
-        <param name="id" type="string" optional="1" />
-        <param name="login" type="string" optional="1" />
+        <param name="id" optional="1" />
+        <param name="login" optional="1" />
       </query>
       <response>
-        <param name="id" type="string" />
-        <param name="login" type="string" />
-        <param name="display_name" type="string" />
-        <param name="type" type="string" />
-        <param name="broadcaster_type" type="string" />
-        <param name="description" type="string" />
-        <param name="profile_image_url" type="string" />
-        <param name="offline_image_url" type="string" />
+        <param name="id" />
+        <param name="login" />
+        <param name="display_name" />
+        <param name="type" />
+        <param name="broadcaster_type" />
+        <param name="description" />
+        <param name="profile_image_url" />
+        <param name="offline_image_url" />
         <param name="view_count" type="int" />
-        <param name="email" type="string" optional="1" />
-        <param name="created_at" type="string" />
+        <param name="email" optional="1" />
+        <param name="created_at" />
       </response>
     </endpoint>
   </collection>
