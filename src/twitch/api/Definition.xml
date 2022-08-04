@@ -405,85 +405,121 @@
           Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status. Default: false.
         </param>
       </request>
-      <response>
+      <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="DeleteCustomReward" scope="channel:manage:redemptions" method="Delete" path="channel_points/custom_rewards">
+      Deletes a Custom Reward on a channel.
+
+      The Custom Reward specified by `id` must have been created by the `client_id` attached to the OAuth token in order to be deleted. Any `UNFULFILLED` Custom Reward Redemptions of the deleted Custom Reward will be updated to the `FULFILLED` status.
+      <query>
         <param name="broadcaster_id">
-          ID of the channel the reward is for.
-        </param>
-        <param name="broadcaster_login">
-          Broadcaster's user login name.
-        </param>
-        <param name="broadcaster_name">
-          Display name of the channel the reward is for.
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
         </param>
         <param name="id">
-          ID of the reward.
+          ID of the Custom Reward to delete, must match a Custom Reward on `broadcaster_id`'s channel.
         </param>
-        <param name="image" type="object" optional="1">
-          Set of custom images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }, can be null if no images have been uploaded
-          <!-- TODO: "common_object" type to compose this sort of thing that shows up in multiple places -->
+      </query>
+    </endpoint>
+    <endpoint name="GetCustomReward" scope="channel:read:redemptions" path="channel_points/custom_rewards">
+      Returns a list of Custom Reward objects for the Custom Rewards on a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
         </param>
-        <param name="background_color">
-          Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+        <param name="id" optional="1">
+          When used, this parameter filters the results and only returns reward objects for the Custom Rewards with matching ID. Maximum: 50
         </param>
-        <param name="is_enabled" type="bool">
-          Is the reward currently enabled, if false the reward won't show up to viewers
+        <param name="only_manageable_rewards" type="bool" optional="1">
+          When set to true, only returns custom rewards that the calling `client_id` can manage. Default: false.
         </param>
-        <param name="cost" type="int">
-          The cost of the reward.
+      </query>
+      <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="GetCustomRewardRedemption" scope="channel:read:redemptions" path="custom_rewards/redemptions">
+      Returns Custom Reward Redemption objects for a Custom Reward on a channel that was created by the same `client_id`.
+
+      Developers only have access to get and update redemptions for the rewards created programmatically by the same `client_id`.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
         </param>
-        <param name="title">
-          The title of the reward.
+        <param name="reward_id">
+          When ID is not provided, this parameter returns paginated Custom Reward Redemption objects for redemptions of the Custom Reward with ID `reward_id`.
         </param>
-        <param name="prompt">
-          The prompt for the viewer when they are redeeming the reward.
+        <param name="id" optional="1">
+          When used, this param filters the results and only returns Custom Reward Redemption objects for the redemptions with matching ID. Maximum: 50
         </param>
-        <param name="max_per_stream_setting" type="object">
-          Whether a maximum per stream is enabled and what the maximum is.
-          <param name="is_enabled">
-            Whether this setting is enabled.
+        <param name="status" optional="1">
+          When `id` is not provided, this param is required and filters the paginated Custom Reward Redemption objects for redemptions with the matching status. Can be one of UNFULFILLED, FULFILLED or CANCELED
+        </param>
+        <param name="sort" optional="1">
+          Sort order of redemptions returned when getting the paginated Custom Reward Redemption objects for a reward. One of: OLDEST, NEWEST. Default: OLDEST.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without ID. If an ID is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the pagination response field of a prior query.
+        </param>
+        <param name="first" type="int" optional="1">
+          Number of results to be returned when getting the paginated Custom Reward Redemption objects for a reward. Limit: 50. Default: 20.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The id of the broadcaster that the reward belongs to.
+        </param>
+        <param name="broadcaster_login">
+          Broadcaster’s user login name.
+        </param>
+        <param name="broadcaster_name">
+          The display name of the broadcaster that the reward belongs to.
+        </param>
+        <param name="id">
+          The ID of the redemption.
+        </param>
+        <param name="user_login">
+          The login of the user who redeemed the reward.
+        </param>
+        <param name="user_id">
+          The ID of the user that redeemed the reward.
+        </param>
+        <param name="user_name">
+          The display name of the user that redeemed the reward.
+        </param>
+        <param name="user_input">
+          The user input provided. Empty string if not provided.
+        </param>
+        <param name="status">
+          One of UNFULFILLED, FULFILLED or CANCELED
+        </param>
+        <param name="redeemed_at">
+          RFC3339 timestamp of when the reward was redeemed.
+        </param>
+        <param name="reward" type="object">
+          Basic information about the Custom Reward that was redeemed at the time it was redeemed.
+          <param name="id">
+            The ID of the custom reward.
           </param>
-          <param name="max_per_stream" type="int">
-            The maximum number per stream if enabled.
+          <param name="title">
+            The title of the reward.
           </param>
-        </param>
-        <param name="max_per_user_per_stream_setting" type="object">
-          Whether a maximum per user per stream is enabled and what the maximum is.
-          <param name="is_enabled">
-            Whether this setting is enabled.
+          <param name="prompt">
+            The prompt text associated with the reward.
           </param>
-          <param name="max_per_user_per_stream" type="int">
-            The maximum number per user per stream if enabled.
+          <param name="cost" type="int">
+            The cost of the reward, in channel points.
           </param>
-        </param>
-        <param name="global_cooldown_setting" type="object">
-          Whether a cooldown is enabled and what the cooldown is.
-          <param name="is_enabled">
-            Whether this setting is enabled.
-          </param>
-          <param name="global_cooldown_seconds" type="int">
-            The cooldown in seconds if enabled.
-          </param>
-        </param>
-        <param name="is_paused" type="bool">
-          Is the reward currently paused, if true viewers can't redeem
-        </param>
-        <param name="is_in_stock" type="bool">
-          Is the reward currently in stock, if false viewers can't redeem
-        </param>
-        <param name="default_image" type="object">
-          Set of default images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }
-          <!-- TODO: "common_object" type to compose this sort of thing that shows up in multiple places -->
-        </param>
-        <param name="should_redemptions_skip_request_queue" type="bool">
-          Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status.
-        </param>
-        <param name="redemptions_redeemed_current_stream" type="int" optional="1">
-          The number of redemptions redeemed during the current live stream. Counts against the max_per_stream_setting limit. Null if the broadcasters stream isn't live or max_per_stream_setting isn't enabled.
-        </param>
-        <param name="cooldown_expires_at" optional="1">
-          Timestamp of the cooldown expiration. Null if the reward isn't on cooldown.
         </param>
       </response>
+    </endpoint>
+    <endpoint name="UpdateCustomReward" scope="channel:manage:redemptions" method="Patch" path="channel_points/custom_rewards">
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="id">
+          ID of the Custom Reward to update. Must match a Custom Reward on the channel of the `broadcaster_id`.
+        </param>
+      </query>
+      <response commonref="custom_reward" />
     </endpoint>
   </collection>
 
@@ -508,4 +544,94 @@
       </response>
     </endpoint>
   </collection>
+
+  <commonobject name="url_sizes">
+    <param name="url_1x">
+      Path to the 1x-sized image for this object.
+    </param>
+    <param name="url_2x">
+      Path to the 2x-sized image for this object.
+    </param>
+    <param name="url_4x">
+      Path to the 4x-sized image for this object.
+    </param>
+  </commonobject>
+
+  <commonobject name="custom_reward">
+    <param name="broadcaster_id">
+      ID of the channel the reward is for.
+    </param>
+    <param name="broadcaster_login">
+      Broadcaster's user login name.
+    </param>
+    <param name="broadcaster_name">
+      Display name of the channel the reward is for.
+    </param>
+    <param name="id">
+      ID of the reward.
+    </param>
+    <param name="image" type="object" optional="1" commonref="url_sizes">
+      Set of custom images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }, can be null if no images have been uploaded
+    </param>
+    <param name="background_color">
+      Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+    </param>
+    <param name="is_enabled" type="bool">
+      Is the reward currently enabled, if false the reward won't show up to viewers
+    </param>
+    <param name="cost" type="int">
+      The cost of the reward.
+    </param>
+    <param name="title">
+      The title of the reward.
+    </param>
+    <param name="prompt">
+      The prompt for the viewer when they are redeeming the reward.
+    </param>
+    <param name="max_per_stream_setting" type="object">
+      Whether a maximum per stream is enabled and what the maximum is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="max_per_stream" type="int">
+        The maximum number per stream if enabled.
+      </param>
+    </param>
+    <param name="max_per_user_per_stream_setting" type="object">
+      Whether a maximum per user per stream is enabled and what the maximum is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="max_per_user_per_stream" type="int">
+        The maximum number per user per stream if enabled.
+      </param>
+    </param>
+    <param name="global_cooldown_setting" type="object">
+      Whether a cooldown is enabled and what the cooldown is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="global_cooldown_seconds" type="int">
+        The cooldown in seconds if enabled.
+      </param>
+    </param>
+    <param name="is_paused" type="bool">
+      Is the reward currently paused, if true viewers can't redeem
+    </param>
+    <param name="is_in_stock" type="bool">
+      Is the reward currently in stock, if false viewers can't redeem
+    </param>
+    <param name="default_image" type="object" commonref="url_sizes">
+      Set of default images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }
+    </param>
+    <param name="should_redemptions_skip_request_queue" type="bool">
+      Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status.
+    </param>
+    <param name="redemptions_redeemed_current_stream" type="int" optional="1">
+      The number of redemptions redeemed during the current live stream. Counts against the max_per_stream_setting limit. Null if the broadcasters stream isn't live or max_per_stream_setting isn't enabled.
+    </param>
+    <param name="cooldown_expires_at" optional="1">
+      Timestamp of the cooldown expiration. Null if the reward isn't on cooldown.
+    </param>
+  </commonobject>
 </TwitchAPI>
