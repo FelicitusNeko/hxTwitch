@@ -10,8 +10,16 @@ import twitch.api.APIEndpoint;
 using StringTools;
 
 class APIBuilder {
+  /** String values that represent a `true` boolean state. **/
 	public static var truthy = ["1", "true", "on", "yes"];
+  /** String values that represent a `false` boolean state. **/
+	public static var falsy = ["0", "false", "off", "no"];
 
+  /**
+    Builds a set of API functions.
+    @param collection The collection to load from the definition file.
+    @return The array of fields to replace those in the target class.
+  **/
 	public static macro function build(collection:String):Array<Field> {
 		var fields = Context.getBuildFields();
 
@@ -109,7 +117,8 @@ class APIBuilder {
 										type: buildAnonymous(node)
 									});
 								case "response":
-									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(node))], pack: []});
+									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(node,
+										!falsy.contains(node.get("array"))))], pack: []});
 								default:
 							}
 						case PCData:
@@ -157,17 +166,23 @@ class APIBuilder {
 		return fields;
 	}
 
-	public static function buildAnonymous(node:Xml) {
+  /**
+    Builds an anonymous structure.
+    @param node The XML node on which to base the construction.
+    @param responseArray Whether the result should be enclosed in an `Array`, which is the case for most responses.
+    @return The anonymous structure. If `responseArray` is true, it will be contained in an `Array`.
+  **/
+	public static function buildAnonymous(node:Xml, responseArray = false) {
 		var retval:Array<Field> = [];
 		for (param in node.elements()) {
 			// trace(param);
 			var optional = truthy.contains(param.get("optional"));
 			var isArray = truthy.contains(param.get("array"));
 			var kind = switch (param.get("type")) {
-				case "string" | null: (macro:String);
-				case "int": (macro:Int);
-				case "bool": (macro:Bool);
-				case "object": (buildAnonymous(param));
+				case "str" | "string" | null: (macro:String);
+				case "int" | "integer": (macro:Int);
+				case "bool" | "boolean": (macro:Bool);
+				case "obj" | "object": (buildAnonymous(param));
 				case x: Context.error('Unknown type $x', Context.currentPos());
 			};
 
@@ -191,6 +206,6 @@ class APIBuilder {
 
 			retval.push(field);
 		}
-		return TAnonymous(retval);
+		return responseArray ? TPath({name: "Array", params: [TPType(TAnonymous(retval))], pack: []}) : TAnonymous(retval);
 	}
 }
