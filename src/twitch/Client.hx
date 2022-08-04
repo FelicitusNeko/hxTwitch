@@ -25,8 +25,10 @@ typedef RawAPIResponse = {
 typedef AppAccessResponse = {
 	/** The app access token. **/
 	var access_token:String;
+
 	/** The number of seconds until the token expires. **/
 	var expires_in:Int;
+
 	/** The type of token, usually `"bearer"`. **/
 	var token_type:String;
 }
@@ -34,6 +36,7 @@ typedef AppAccessResponse = {
 /** The Twitch API, PubSub, and Chat client. **/
 class Client {
 	//------------- Statics
+
 	/** The URL for obtaining an app access token. **/
 	public static final appAccessURL = "https://id.twitch.tv/oauth2/token";
 
@@ -135,16 +138,15 @@ class Client {
 			"response_type" => "token",
 			"client_id" => _clientId,
 			"redirect_url" => redirectURI,
-			"scope" => scopes.join(" "),
+			"scope" => scopes.join("+"),
 			"state" => _genNonce
 		])
-			queryStr.push(k.urlEncode() + "=" + v.urlEncode());
-		
-		return oauthURL + "?" + queryStr.join("&");
+			queryStr.push('${k.urlEncode()}=${v.urlEncode()}');
+
+		return '$oauthURL?${queryStr.join("&")}';
 	}
 
 	// TODO: listener for OAuth requests
-
 	//------------- API functions
 
 	/**
@@ -164,32 +166,42 @@ class Client {
 		trace(url, method, query, data);
 
 		req.onStatus = codeIn -> code = codeIn;
-		req.onError = error -> throw new Exception(error);
+		// req.onError = error -> {
+		// 	trace("Error on API call: " + error);
+		// 	throw new Exception(error);
+		// }
 
+		//trace("Populating authentication");
 		req.addHeader("Client-Id", _clientId);
 		if (_oauthKey != null)
-			req.addHeader("Authorization", "OAuth " + _oauthKey);
+			req.addHeader("Authorization", 'OAuth $_oauthKey');
 		else if (_appToken != null)
-			req.addHeader("Authorization", "Bearer " + _appToken);
-		else throw new Exception("No authentication key provided");
+			req.addHeader("Authorization", 'Bearer $_appToken');
+		else
+			throw new Exception("No authentication key provided");
 
-		if (query != null)
+		if (query != null) {
+			//trace("Populating query string");
 			for (k => v in query)
-				if (v != null)
-					req.addParameter(k, Std.string(v));
+				req.addParameter(k, Std.string(v));
+		}
 
 		if (data != null) {
+			//trace("Populating request body");
 			req.addHeader("Content-Type", "application/json");
 			req.setPostData(data);
 		}
 
+		//trace("Deploying request");
 		req.customRequest(method != Get, retval, null, method);
 
-		if (code >= 400 || code <= 500) {
+		if (code >= 400 && code <= 599) {
+			trace('Error code $code was returned.');
 			var errorData:Dynamic = Json.parse(retval.getBytes().toString());
 			throw new APIException(errorData.message, code, errorData);
 		}
 
+		//trace("Request succeeded. Returning result as string");
 		return {
 			code: code,
 			text: code == 204 ? null : retval.getBytes().toString()
@@ -207,10 +219,10 @@ class Client {
 			"client_secret" => _clientSecret,
 			"grant_type" => "client_credentials"
 		])
-			postStr.push(k.urlEncode() + "=" + v.urlEncode());
+			postStr.push('${k.urlEncode()}=${v.urlEncode()}');
 
 		req.addHeader("Content-Type", "application/x-www-form-urlencoded");
-		//trace(postStr.join("&"));
+		// trace(postStr.join("&"));
 		req.setPostData(postStr.join("&"));
 
 		req.onStatus = codeIn -> code = codeIn;
@@ -219,7 +231,8 @@ class Client {
 
 		req.request(true);
 
-		if (response != null) _appToken = response.access_token;
+		if (response != null)
+			_appToken = response.access_token;
 
 		return response;
 	}
@@ -240,7 +253,7 @@ class Client {
 
 		_ps_ws = new WebSocket(pubSubURL, false);
 		_ps_ws.additionalHeaders.set("Client-ID", _clientId);
-		_ps_ws.additionalHeaders.set("Authorization", "OAuth " + _oauthKey);
+		_ps_ws.additionalHeaders.set("Authorization", 'OAuth $_oauthKey');
 
 		_ps_ws.onopen = () -> {
 			_ps_pinger = new Timer(180000);
@@ -308,7 +321,7 @@ class Client {
 	**/
 	public function psListen(topic:String, callback:PubSubIncomingMessage->Void) {
 		if (_ps_listen.exists(topic))
-			throw new Exception("Already subscribed to topic " + topic);
+			throw new Exception('Already subscribed to topic $topic');
 
 		if (_ps_ws == null || _ps_ws.state == Closed)
 			connectPubSub();
@@ -336,7 +349,7 @@ class Client {
 			return;
 
 		if (!_ps_listen.exists(topic))
-			throw new Exception("Not listening to topic " + topic);
+			throw new Exception('Not listening to topic $topic');
 
 		_ps_ws.send(Json.stringify({
 			type: "UNLISTEN",
@@ -392,10 +405,10 @@ class Client {
 			if (name == null) {
 				trace("Authenticating as anonymous user");
 				var randnum = 10000 + Math.floor(Math.random() * 989999);
-				_ircSend("CAP REQ :" + caps.join(" "), "PASS oauth:000", "NICK justinfan" + randnum);
+				_ircSend('CAP REQ :${caps.join(" ")}', "PASS oauth:000", 'NICK justinfan$randnum');
 			} else {
 				trace("Authenticating as " + name);
-				_ircSend("CAP REQ :" + caps.join(" "), "PASS oauth:" + _oauthKey, "NICK " + name);
+				_ircSend('CAP REQ :${caps.join(" ")}', 'PASS oauth:$_oauthKey', 'NICK $name');
 			}
 		}
 
@@ -433,8 +446,8 @@ class Client {
 		}
 
 		_irc_ws.onerror = err -> {
-			trace("Chat connection error: " + err);
-			throw new Exception("WS IRC error: " + Std.string(err));
+			trace('Chat connection error: $err');
+			throw new Exception('WS IRC error: ${Std.string(err)}');
 		}
 
 		_irc_ws.onclose = () -> {
@@ -475,8 +488,8 @@ class Client {
 		var channelsArray:Array<String> = channels.toArray();
 		for (i => channel in channelsArray)
 			if (channel.charAt(0) != "#")
-				channelsArray[i] = "#" + channel;
-		_ircSend("JOIN " + channelsArray.join(","));
+				channelsArray[i] = '#$channel';
+		_ircSend('JOIN ${channelsArray.join(",")}');
 	}
 
 	/**
@@ -491,12 +504,12 @@ class Client {
 		var channelsArray:Array<String> = channels.toArray();
 		for (i => channel in channelsArray)
 			if (channel.charAt(0) != "#")
-				channelsArray[i] = "#" + channel;
-		_ircSend("PART " + channelsArray.join(","));
+				channelsArray[i] = '#$channel';
+		_ircSend('PART ${channelsArray.join(",")}');
 	}
 
 	/**
-		Say something in a channel.
+		Say something to a user or in a channel.
 		@param recipient The recipient of the message. May be a user or a channel. Channels must be prefixed with `#`.
 		@param message The message to send.
 		@param messageType Optional. The type of message to be sent. Note that announcements require moderator privileges. Defaults to `Say`.
@@ -510,17 +523,17 @@ class Client {
 			throw new Exception("Cannot send messages while anonymous");
 
 		var recipientIsChannel = recipient.charAt(0) == "#";
-		var replyTag = (!recipientIsChannel || replyTo == null) ? "" : "@reply-parent-msg-id=" + replyTo + " ";
+		var replyTag = (!recipientIsChannel || replyTo == null) ? "" : '@reply-parent-msg-id=$replyTo ';
 
 		switch (messageType) {
 			case Say:
-				_ircSend(replyTag + "PRIVMSG " + recipient + " :" + message);
+				_ircSend('${replyTag}PRIVMSG $recipient :$message');
 			case Action:
-				_ircSend(replyTag + "PRIVMSG " + recipient + " :\001ACTION " + message + "\001");
+				_ircSend('${replyTag}PRIVMSG $recipient :\001ACTION $message\001');
 			case Announce:
 				if (!recipientIsChannel)
 					throw new Exception("Cannot /announce to a user; must be a channel");
-				_ircSend("PRIVMSG " + recipient + " :/announce " + message);
+				_ircSend('PRIVMSG $recipient :/announce $message');
 		}
 	}
 }
