@@ -52,7 +52,8 @@ class APIBuilder {
 		// 	}
 
 		var defsFile = Path.join([Path.directory(Context.getPosInfos(Context.currentPos()).file), "Definition.xml"]);
-		var collections = Xml.parse(File.getContent(defsFile)).firstElement().elementsNamed("collection");
+    var root = Xml.parse(File.getContent(defsFile)).firstElement();
+		var collections = root.elementsNamed("collection");
 		var def:Xml = null;
 		var endpointCount = 0;
 
@@ -114,12 +115,14 @@ class APIBuilder {
 
 									args.push({
 										name: x,
-										type: buildAnonymous(node)
+										type: buildAnonymous(root, node)
 									});
 								case "response":
-									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(node,
+									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(root, node,
 										!falsy.contains(node.get("array"))))], pack: []});
-								default:
+                case "nullresponse":
+                  funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
+                default:
 							}
 						case PCData:
 							if (node.nodeValue != null) {
@@ -130,14 +133,19 @@ class APIBuilder {
 						default:
 					}
 
-				if (funcdef.ret == null)
-					Context.error('No return type for endpoint $collection.$endpoint', Context.currentPos());
+				if (funcdef.ret == null) {
+          // Delete-method endpoints are likely to return 204 No Content; allow this implicitly
+					if (method == "Delete")
+            funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
+          // Anything else must specify explicitly with <nullresponse /> or else it's an error
+          else Context.error('No return type for endpoint $collection.$endpoint', Context.currentPos());
+        }
 
 				if (hasBody) {
 					if (hasQuery)
 						funcdef.expr = macro {
 							// trace("Calling endpoint with query and request");
-							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>), request);
+							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, query, request);
 						}
 					else
 						funcdef.expr = macro {
@@ -148,7 +156,7 @@ class APIBuilder {
 					if (hasQuery)
 						funcdef.expr = macro {
 							// trace("Calling endpoint with query only");
-							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, cast(query, Map<String, Dynamic>));
+							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, query);
 						}
 					else
 						funcdef.expr = macro {
@@ -172,8 +180,21 @@ class APIBuilder {
     @param responseArray Whether the result should be enclosed in an `Array`, which is the case for most responses.
     @return The anonymous structure. If `responseArray` is true, it will be contained in an `Array`.
   **/
-	public static function buildAnonymous(node:Xml, responseArray = false) {
+	public static function buildAnonymous(root:Xml, node:Xml, responseArray = false) {
 		var retval:Array<Field> = [];
+    var commonRef = node.get("commonref");
+
+    if (commonRef != null) {
+      var found = false;
+      for (commonobj in root.elementsNamed("commonobject"))
+        if (commonobj.get("name") == commonRef) {
+          node = commonobj;
+          found = true;
+          break;
+        }
+      if (!found) Context.error('Reference to undefined common object $commonRef', Context.currentPos());
+    }
+
 		for (param in node.elements()) {
 			// trace(param);
 			var optional = truthy.contains(param.get("optional"));
@@ -182,7 +203,11 @@ class APIBuilder {
 				case "str" | "string" | null: (macro:String);
 				case "int" | "integer": (macro:Int);
 				case "bool" | "boolean": (macro:Bool);
-				case "obj" | "object": (buildAnonymous(param));
+				case "obj" | "object": (buildAnonymous(root, param));
+        // "map" would generally only be used if:
+        // 1) keys may start with digits or contain illegal characters for variable names
+        // 2) key names are not fixed and may vary
+        case "map": (macro:DynamicAccess<String>);
 				case x: Context.error('Unknown type $x', Context.currentPos());
 			};
 
