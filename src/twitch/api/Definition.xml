@@ -16,7 +16,7 @@
 <TwitchAPI>
 
   <collection name="ads">
-    <endpoint name="StartCommercial" method="Post" path="channels/commercial" scope="channel:edit:commercial">
+    <endpoint name="StartCommercial" scope="channel:edit:commercial" method="Post" path="channels/commercial" >
       Starts a commercial on a specified channel.
       <request>
         <param name="broadcaster_id">
@@ -43,7 +43,7 @@
   </collection>
 
   <collection name="analytics">
-    <endpoint name="GetExtensionAnalytics" path="analytics/extensions" scope="analytics:read:extensions">
+    <endpoint name="GetExtensionAnalytics" scope="analytics:read:extensions" path="analytics/extensions">
       Gets a URL that Extension developers can use to download analytics reports (CSV files) for their Extensions. The URL is valid for 5 minutes.
 
       If you specify a future date, the response will be “Report Not Found For Date Range.” If you leave both `started_at` and `ended_at` blank, the API returns the most recent date of data.
@@ -91,7 +91,7 @@
         </param>
       </response>
     </endpoint>
-    <endpoint name="GetGameAnalytics" path="analytics/games" scope="analytics:read:games">
+    <endpoint name="GetGameAnalytics" scope="analytics:read:games" path="analytics/games">
       Gets a URL that game developers can use to download analytics reports (CSV files) for their games. The URL is valid for 5 minutes. For detail about analytics and the fields returned, see the Insights &amp; Analytics guide.
 
       The response has a JSON payload with a `data` field containing an array of games information elements and can contain a `pagination` field containing information required to query for more streams.
@@ -339,7 +339,7 @@
       Gets a list of users who have editor permissions for a specific channel.
       <query>
         <param name="broadcaster_id">
-          Broadcaster’s user ID associated with the channel.
+          Broadcaster's user ID associated with the channel.
         </param>
       </query>
       <response>
@@ -462,53 +462,7 @@
           Number of results to be returned when getting the paginated Custom Reward Redemption objects for a reward. Limit: 50. Default: 20.
         </param>
       </query>
-      <response>
-        <param name="broadcaster_id">
-          The id of the broadcaster that the reward belongs to.
-        </param>
-        <param name="broadcaster_login">
-          Broadcaster’s user login name.
-        </param>
-        <param name="broadcaster_name">
-          The display name of the broadcaster that the reward belongs to.
-        </param>
-        <param name="id">
-          The ID of the redemption.
-        </param>
-        <param name="user_login">
-          The login of the user who redeemed the reward.
-        </param>
-        <param name="user_id">
-          The ID of the user that redeemed the reward.
-        </param>
-        <param name="user_name">
-          The display name of the user that redeemed the reward.
-        </param>
-        <param name="user_input">
-          The user input provided. Empty string if not provided.
-        </param>
-        <param name="status">
-          One of UNFULFILLED, FULFILLED or CANCELED
-        </param>
-        <param name="redeemed_at">
-          RFC3339 timestamp of when the reward was redeemed.
-        </param>
-        <param name="reward" type="object">
-          Basic information about the Custom Reward that was redeemed at the time it was redeemed.
-          <param name="id">
-            The ID of the custom reward.
-          </param>
-          <param name="title">
-            The title of the reward.
-          </param>
-          <param name="prompt">
-            The prompt text associated with the reward.
-          </param>
-          <param name="cost" type="int">
-            The cost of the reward, in channel points.
-          </param>
-        </param>
-      </response>
+      <response commonref="custom_redeem" />
     </endpoint>
     <endpoint name="UpdateCustomReward" scope="channel:manage:redemptions" method="Patch" path="channel_points/custom_rewards">
       <query>
@@ -520,6 +474,594 @@
         </param>
       </query>
       <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="UpdateRedemptionStatus" scope="channel:manage:redemptions" method="Patch" path="custom_rewards/redemptions">
+      Updates the status of Custom Reward Redemption objects on a channel that are in the UNFULFILLED status.
+
+      The Custom Reward Redemption specified by id must be for a Custom Reward created by the client_id attached to the user OAuth token.
+      <query>
+        <param name="id">
+          ID of the Custom Reward Redemption to update, must match a Custom Reward Redemption on `broadcaster_id`'s channel. Maximum: 50.
+        </param>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="reward_id">
+          ID of the Custom Reward the redemptions to be updated are for.
+        </param>
+      </query>
+      <request>
+        <param name="status">
+          The new status to set redemptions to. Can be either FULFILLED or CANCELED. Updating to CANCELED will refund the user their Channel Points.
+        </param>
+      </request>
+      <response commonref="custom_redeem" />
+    </endpoint>
+  </collection>
+
+  <collection name="chat">
+    <endpoint name="GetChannelEmotes" path="chat/emotes">
+      Gets all emotes that the specified Twitch channel created. Broadcasters create these custom emotes for users who subscribe to or follow the channel, or cheer Bits in the channel's chat window. For information about the custom emotes, see [subscriber emotes](https://help.twitch.tv/s/article/subscriber-emote-guide), [Bits tier emotes](https://help.twitch.tv/s/article/custom-bit-badges-guide?language=bg#slots), and [follower emotes](https://blog.twitch.tv/en/2021/06/04/kicking-off-10-years-with-our-biggest-emote-update-ever/).
+  
+      **NOTE:** With the exception of custom follower emotes, users may use custom emotes in any Twitch chat.
+  
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <query>
+        <param name="broadcaster_id">
+          An ID that identifies the broadcaster to get the emotes from.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="tier">
+          The subscriber tier at which the emote is unlocked. This field contains the tier information only if `emote_type` is set to `subscriptions`, otherwise, it's an empty string.
+        </param>
+        <param name="emote_type">
+          The type of emote. The possible values are:
+          - bitstier — Indicates a custom Bits tier emote.
+          - follower — Indicates a custom follower emote.
+          - subscriptions — Indicates a custom subscriber emote.
+        </param>
+        <param name="emote_set_id">
+          An ID that identifies the emote set that the emote belongs to.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGlobalEmotes" path="chat/emotes/global">
+      Gets all [global emotes](https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes/). Global emotes are Twitch-created emoticons that users can use in any Twitch chat.
+
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetEmoteSets" path="chat/emotes/set">
+      Gets emotes for one or more specified emote sets.
+
+      An emote set groups emotes that have a similar context. For example, Twitch places all the subscriber emotes that a broadcaster uploads for their channel in the same emote set.
+
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <query>
+        <param name="emote_set_id">
+          An ID that identifies the emote set. Include the parameter for each emote set you want to get. For example, `emote_set_id=1234&amp;emote_set_id=5678`. You may specify a maximum of 25 IDs.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="tier">
+          The subscriber tier at which the emote is unlocked. This field contains the tier information only if `emote_type` is set to `subscriptions`, otherwise, it's an empty string.
+        </param>
+        <param name="emote_type">
+          The type of emote. The possible values are:
+          - bitstier — Indicates a custom Bits tier emote.
+          - follower — Indicates a custom follower emote.
+          - subscriptions — Indicates a custom subscriber emote.
+        </param>
+        <param name="emote_set_id">
+          An ID that identifies the emote set that the emote belongs to.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetChannelChatBadges" path="chat/badges">
+      Gets a list of custom chat badges that can be used in chat for the specified channel. This includes [subscriber badges](https://help.twitch.tv/s/article/subscriber-badge-guide) and [Bit badges](https://help.twitch.tv/s/article/custom-bit-badges-guide).
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster whose chat badges are being requested. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+      </query>
+      <response>
+        <param name="set_id">
+          ID for the chat badge set.
+        </param>
+        <param name="versions" type="object" commonref="url_sizes_and_id">
+          Contains chat badge objects for the set.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGlobalChatBadges" path="chat/badges/global">
+      Gets a list of chat badges that can be used in chat for any channel.
+      <response>
+        <param name="set_id">
+          ID for the chat badge set.
+        </param>
+        <param name="versions" type="object" commonref="url_sizes_and_id">
+          Contains chat badge objects for the set.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetChatSettings" path="chat/settings">
+      Gets the broadcaster's chat settings.
+
+      For an overview of chat settings, see [Chat Commands for Broadcasters and Moderators](https://help.twitch.tv/s/article/chat-commands#AllMods) and [Moderator Preferences](https://help.twitch.tv/s/article/setting-up-moderation-for-your-twitch-channel#modpreferences).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat settings you want to get.
+        </param>
+        <param name="moderator_id" optional="1">
+          Required only to access the `non_moderator_chat_delay` or `non_moderator_chat_delay_duration` settings.
+
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to get their own settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The ID of the broadcaster specified in the request.
+        </param>
+        <param name="emote_mode" type="bool">
+          A Boolean value that determines whether chat messages must contain only emotes. Is **true**, if only messages that are 100% emotes are allowed; otherwise, **false**.
+        </param>
+        <param name="follower_mode" type="bool">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Is **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room. See `follower_mode`.
+
+          Is **null** if follower_mode is false.
+        </param>
+        <param name="slow_mode" type="bool">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages. See `slow_mode`.
+
+          Is **null** if slow_mode is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Is **true**, if the broadcaster requires unique messages only; otherwise, **false**.
+        </param>
+        <param name="moderator_id" optional="1">
+          The moderator's ID. The response includes this field only if the request specifies a User access token that includes the **moderator:read:chat_settings** scope.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `non_moderator_chat_delay_duration` for the length of the delay.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat. See `non_moderator_chat_delay`.
+
+          Is **null** if non_moderator_chat_delay is **false**.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateChatSettings" scope="moderator:manage:chat_settings" method="Patch" path="chat/settings">
+      Updates the broadcaster's chat settings.
+
+      In the request body, specify only those fields that you want to update.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat settings you want to update. This ID must match the user ID associated with the user OAuth token.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="emote_mode" type="bool" optional="1">
+          A Boolean value that determines whether chat messages must contain only emotes.
+
+          Set to **true**, if only messages that are 100% emotes are allowed; otherwise, false. Default is **false**.
+        </param>
+        <param name="follower_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Set to **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**. Default is **true**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room (see `follower_mode`).
+
+          You may specify a value in the range: 0 (no restriction) through 129600 (3 months). The default is 0.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Set to true, if the broadcaster applies a delay; otherwise, false. Default is false.
+
+          See non_moderator_chat_delay_duration for the length of the delay.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat.
+
+          Possible values are:
+          - 2 — 2 second delay (recommended)
+          - 4 — 4 second delay
+          - 6 — 6 second delay
+
+          See `non_moderator_chat_delay`.
+        </param>
+        <param name="slow_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Set to **true**, if the broadcaster applies a wait period messages; otherwise, **false**. Default is **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages (see `slow_mode`).
+
+          You may specify a value in the range: 3 (3 second delay) through 120 (2 minute delay). The default is 30 seconds.
+        </param>
+        <param name="subscriber_mode" type="bool" optional="1">
+          A Boolean value that determines whether only users that subscribe to the broadcaster's channel can talk in the chat room.
+
+          Set to **true**, if the broadcaster restricts the chat room to subscribers only; otherwise, **false**. Default is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Set to **true**, if the broadcaster requires unique messages only; otherwise, **false**. Default is **false**.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The ID of the broadcaster specified in the request.
+        </param>
+        <param name="emote_mode" type="bool">
+          A Boolean value that determines whether chat messages must contain only emotes. Is **true**, if only messages that are 100% emotes are allowed; otherwise, **false**.
+        </param>
+        <param name="follower_mode" type="bool">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Is **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room. See `follower_mode`.
+
+          Is **null** if follower_mode is false.
+        </param>
+        <param name="slow_mode" type="bool">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages. See `slow_mode`.
+
+          Is **null** if slow_mode is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Is **true**, if the broadcaster requires unique messages only; otherwise, **false**.
+        </param>
+        <param name="moderator_id" optional="1">
+          The moderator's ID. The response includes this field only if the request specifies a User access token that includes the **moderator:read:chat_settings** scope.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `non_moderator_chat_delay_duration` for the length of the delay.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat. See `non_moderator_chat_delay`.
+
+          Is **null** if non_moderator_chat_delay is **false**.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="SendChatAnnouncement" scope="moderator:manage:announcements" method="Post" path="chat/announcements">
+      Sends an announcement to the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room to send the announcement to.
+        </param>
+        <param name="moderator_id">
+          The ID of a user who has permission to moderate the broadcaster's chat room. This ID must match the user ID in the OAuth token, which can be a moderator or the broadcaster.
+        </param>
+      </query>
+      <request>
+        <param name="message">
+          The announcement to make in the broadcaster's chat room. Announcements are limited to a maximum of 500 characters; announcements longer than 500 characters are truncated.
+        </param>
+        <param name="color">
+          The color used to highlight the announcement. Possible case-sensitive values are:
+          - blue
+          - green
+          - orange
+          - purple
+          - primary (default)
+
+          If `color` is set to primary or is not set, the channel's accent color is used to highlight the announcement (see **Profile Accent Color** under profile settings, **Channel and Videos**, and **Brand**).
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="GetUserChatColor" path="chat/color">
+      Gets the color used for the user's name in chat.
+      <query>
+        <param name="user_id">
+          The ID of the user whose color you want to get. To specify more than one user, include the user_id parameter for each user to get. For example, `&amp;user_id=1234&amp;user_id=5678`. The maximum number of IDs that you may specify is 100.
+
+          The response ignores duplicate IDs and IDs that aren't found.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          The ID of the user.
+        </param>
+        <param name="user_login">
+          The user's login name.
+        </param>
+        <param name="user_name">
+          The user's display name.
+        </param>
+        <param name="color">
+          The Hex color code that the user uses in chat for their name. If the user hasn't specified a color in their settings, the string is empty.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateUserChatColor" scope="user:manage:chat_color" method="Put" path="chat/color">
+      Updates the color used for the user's name in chat.
+      <query>
+        <param name="user_id">
+          The ID of the user whose chat color you want to update.
+        </param>
+        <param name="color">
+          The color to use for the user's name in chat. All users may specify one of the following named color values.
+          - blue
+          - blue_violet
+          - cadet_blue
+          - chocolate
+          - coral
+          - dodger_blue
+          - firebrick
+          - golden_rod
+          - green
+          - hot_pink
+          - orange_red
+          - red
+          - sea_green
+          - spring_green
+          - yellow_green
+
+          Turbo and Prime users may specify a named color or a Hex color code like #9146FF.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+  </collection>
+
+  <collection name="clips">
+    <endpoint name="CreateClip" scope="clips:edit" method="Post" path="clips">
+      Creates a clip programmatically. This returns both an ID and an edit URL for the new clip.
+
+      **Note:** The clips service returns a maximum of 1000 clips,
+
+      Clip creation takes time. We recommend that you query Get Clips, with the clip ID that is returned here. If Get Clips returns a valid clip, your clip creation was successful. If, after 15 seconds, you still have not gotten back a valid clip from Get Clips, assume that the clip was not created and retry Create Clip.
+
+      This endpoint has a global rate limit, across all callers. The limit may change over time, but the response includes informative headers:
+
+      ```
+      Ratelimit-Helixclipscreation-Limit: &lt;int value&gt;
+      Ratelimit-Helixclipscreation-Remaining: &lt;int value&gt;
+      ```
+      <query>
+        <param name="broadcaster_id">
+          ID of the stream from which the clip will be made.
+        </param>
+        <param name="has_delay" type="bool" optional="1">
+          If `false`, the clip is captured from the live stream when the API is called; otherwise, a delay is added before the clip is captured (to account for the brief delay between the broadcaster's stream and the viewer's experience of that stream). Default: `false`.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          ID of the clip that was created.
+        </param>
+        <param name="edit_url">
+          URL of the edit page for the clip.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetClips" path="clips">
+      Gets clip information by clip ID (one or more), broadcaster ID (one only), or game ID (one only).
+
+      **Note:** The clips service returns a maximum of 1000 clips.
+
+      The response has a JSON payload with a `data` field containing an array of clip information elements and a `pagination` field containing information required to query for more streams.
+
+      For a query to be valid, `id` (one or more), `broadcaster_id`, or `game_id` must be specified. You may specify only one of these parameters.
+      <query>
+        <param name="broadcaster_id" optional="1">
+          ID of the broadcaster for whom clips are returned. The number of clips returned is determined by the `first` query-string parameter (default: 20). Results are ordered by view count.
+        </param>
+        <param name="game_id" optional="1">
+          ID of the game for which clips are returned. The number of clips returned is determined by the `first` query-string parameter (default: 20). Results are ordered by view count.
+        </param>
+        <param name="id" optional="1">
+          ID of the clip being queried. Limit: 100.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries specifying `broadcaster_id` or `game_id`. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries specifying `broadcaster_id` or `game_id`. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned clips, in RFC3339 format. (Note that the seconds value is ignored.) If this is specified, `started_at` also must be specified; otherwise, the time period is ignored.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned clips, in RFC3339 format. (The seconds value is ignored.) If this is specified, `ended_at` also should be specified; otherwise, the `ended_at` date/time will be 1 week after the `started_at` value.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          ID of the clip being queried.
+        </param>
+        <param name="url">
+          URL where the clip can be viewed.
+        </param>
+        <param name="embed_url">
+          URL to embed the clip.
+        </param>
+        <param name="broadcaster_id">
+          User ID of the stream from which the clip was created.
+        </param>
+        <param name="broadcaster_name">
+          Display name corresponding to `broadcaster_id`.
+        </param>
+        <param name="creator_id">
+          ID of the user who created the clip.
+        </param>
+        <param name="creator_name">
+          Display name corresponding to `creator_id`.
+        </param>
+        <param name="video_id">
+          ID of the video from which the clip was created. This field contains an empty string if the video is not available.
+        </param>
+        <param name="game_id">
+          ID of the game assigned to the stream when the clip was created.
+        </param>
+        <param name="language">
+          Language of the stream from which the clip was created. A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="title">
+          Title of the clip.
+        </param>
+        <param name="view_count" type="int">
+          Number of times the clip has been viewed.
+        </param>
+        <param name="created_at">
+          Date when the clip was created.
+        </param>
+        <param name="thumbnail_url">
+          URL of the clip thumbnail.
+        </param>
+        <param name="duration" type="float">
+          Duration of the Clip in seconds (up to 0.1 precision).
+        </param>
+        <param name="vod_offset" type="int">
+          The zero-based offset, in seconds, to where the clip starts in the video (VOD). Is **null** if the video is not available or hasn't been created yet from the live stream. See `video_id`.
+
+          Note that there's a delay between when a clip is created during a broadcast and when the offset is set. During the delay period, `vod_offset` is **null**. The delay is indeterminant but is typically minutes long.
+        </param>
+      </response>
     </endpoint>
   </collection>
 
@@ -556,7 +1098,20 @@
       Path to the 4x-sized image for this object.
     </param>
   </commonobject>
-
+  <commonobject name="url_sizes_and_id">
+    <param name="id">
+      ID of the image version.
+    </param>
+    <param name="image_url_1x">
+      Path to the 1x-sized image for this object.
+    </param>
+    <param name="image_url_2x">
+      Path to the 2x-sized image for this object.
+    </param>
+    <param name="image_url_4x">
+      Path to the 4x-sized image for this object.
+    </param>
+  </commonobject>
   <commonobject name="custom_reward">
     <param name="broadcaster_id">
       ID of the channel the reward is for.
@@ -632,6 +1187,53 @@
     </param>
     <param name="cooldown_expires_at" optional="1">
       Timestamp of the cooldown expiration. Null if the reward isn't on cooldown.
+    </param>
+  </commonobject>
+  <commonobject name="custom_redeem">
+    <param name="broadcaster_id">
+      The id of the broadcaster that the reward belongs to.
+    </param>
+    <param name="broadcaster_login">
+      Broadcaster's user login name.
+    </param>
+    <param name="broadcaster_name">
+      The display name of the broadcaster that the reward belongs to.
+    </param>
+    <param name="id">
+      The ID of the redemption.
+    </param>
+    <param name="user_login">
+      The login of the user who redeemed the reward.
+    </param>
+    <param name="user_id">
+      The ID of the user that redeemed the reward.
+    </param>
+    <param name="user_name">
+      The display name of the user that redeemed the reward.
+    </param>
+    <param name="user_input">
+      The user input provided. Empty string if not provided.
+    </param>
+    <param name="status">
+      One of UNFULFILLED, FULFILLED or CANCELED
+    </param>
+    <param name="redeemed_at">
+      RFC3339 timestamp of when the reward was redeemed.
+    </param>
+    <param name="reward" type="object">
+      Basic information about the Custom Reward that was redeemed at the time it was redeemed.
+      <param name="id">
+        The ID of the custom reward.
+      </param>
+      <param name="title">
+        The title of the reward.
+      </param>
+      <param name="prompt">
+        The prompt text associated with the reward.
+      </param>
+      <param name="cost" type="int">
+        The cost of the reward, in channel points.
+      </param>
     </param>
   </commonobject>
 </TwitchAPI>
