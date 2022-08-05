@@ -1065,6 +1065,484 @@
     </endpoint>
   </collection>
 
+  <collection name="entitlements">
+    <endpoint name="GetCodeStatus" path="entitlements/codes">
+      Gets the status of one or more provided codes. This API requires that the caller is an authenticated Twitch user. The API is throttled to one request per second per authenticated user. Codes are redeemable alphanumeric strings tied only to the bits product. This third-party API allows other parties to redeem codes on behalf of users. Third-party app and extension developers can use the API to provide rewards of bits from within their games.
+
+      We provide sets of codes to the third party as part of a contract agreement. The third-party program then calls this API to credit a Twitch user by submitting any specific codes. This means that a bits reward can be applied without users having to follow any manual steps.
+
+      All codes are single-use. Once a code has been redeemed, via either this API or the site page, then the code is no longer valid for any further use.
+      <query>
+        <param name="code">
+          The code to get the status of. Repeat this query parameter additional times to get the status of multiple codes.
+          Ex: `?code=code1&amp;code=code2`
+          1-20 code parameters are allowed.
+        </param>
+        <param name="user_id">
+          Represents a numeric Twitch user ID.
+          The user account which is going to receive the entitlement associated with the code.
+        </param>
+      </query>
+      <response>
+        <param name="code">
+          The code being checked.
+        </param>
+        <param name="status">
+          Indicates the success or error state of each key when redeeming.
+
+          **Code Statuses**
+          |Code|Description|
+          |-|-|
+          |`SUCCESSFULLY_REDEEMED`|Request successfully redeemed this code to the authenticated user's account. This status will only ever be encountered when calling the POST API to redeem a key.|
+          |`ALREADY_CLAIMED`|Code has already been claimed by a Twitch user.|
+          |`EXPIRED`|Code has expired and can no longer be claimed.|
+          |`USER_NOT_ELIGIBLE`|User is not eligible to redeem this code.|
+          |`NOT_FOUND`|Code is not valid and/or does not exist in our database.|
+          |`INACTIVE`|Code is not currently active.|
+          |`UNUSED`|Code has not been claimed.This status will only ever be encountered when calling the GET API to get a keys status.|
+          |`INCORRECT_FORMAT`|Code was not properly formatted.|
+          |`INTERNAL_ERROR`|Indicates some internal and/or unknown failure handling this code.|
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetDropsEntitlements" path="entitlements/drops">
+      Gets a list of entitlements for a given organization that have been granted to a game, user, or both.
+
+      Valid combinations of requests are:
+      |Authorization Provided|Request Fields Present|Data Returned|
+      |-|-|
+      |**App Access OAuth Token**|No fields|All entitlements with benefits owned by your organization.|
+      ||`user_id`|All entitlements for a user with benefits owned by your organization.|
+      ||`user_id`, `game_id`|All entitlements for the game granted to a user. Your organization must own the game.|
+      ||`game_id`|All entitlements for all users for a game. Your organization must own the game.|
+      |**User OAuth Token**|No fields|All entitlements owned by that user with benefits owned by your organization.|
+      ||`user_id`|Invalid.|
+      ||`user_id`, `game_id`|Invalid.|
+      ||`game_id`|All entitlements owned by a user for the specified game. Your organization must own the game.|
+      <query>
+        <param name="id" optional="1">
+          Unique identifier of the entitlement.
+        </param>
+        <param name="user_id" optional="1">
+          A Twitch user ID.
+        </param>
+        <param name="game_id" optional="1">
+          A Twitch game ID.
+        </param>
+        <param name="fulfillment_status" optional="1">
+          An optional fulfillment status used to filter entitlements. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to fetch the next page of data.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of entitlements to return.
+
+          Default: 20
+          Max: 1000
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Unique identifier of the entitlement.
+        </param>
+        <param name="benefit_id">
+          Identifier of the benefit.
+        </param>
+        <param name="timestamp">
+          UTC timestamp in ISO format when this entitlement was granted on Twitch.
+        </param>
+        <param name="user_id">
+          Twitch user ID of the user who was granted the entitlement.
+        </param>
+        <param name="game_id">
+          Twitch game ID of the game that was being played when this benefit was entitled.
+        </param>
+        <param name="fulfillment_status">
+          The fulfillment status of the entitlement as determined by the game developer. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+        <param name="updated_at">
+          UTC timestamp in ISO format for when this entitlement was last updated.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateDropsEntitlements" method="Patch" path="entitlements/drops">
+      Updates the fulfillment status on a set of Drops entitlements, specified by their entitlement IDs.
+
+      Valid combinations of requests are:
+      |Authorization Provided|Data Returned|
+      |-|-|
+      |App Access OAuth Token|All entitlements with benefits owned by your organization.|
+      |User OAuth Token|All entitlements owned by that user with benefits owned by your organization.|
+      <request>
+        <param name="entitlement_ids" array="1">
+          An array of unique identifiers of the entitlements to update.
+
+          Maximum: 100.
+        </param>
+        <param name="fulfillment_status">
+          A fulfillment status. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+      </request>
+      <response>
+        <param name="status">
+          Status code applied to a set of entitlements for the update operation that can be used to indicate partial success. Valid values are:
+          |Code|Description|
+          |-|-|
+          |`SUCCESS`|Entitlement was successfully updated.|
+          |`INVALID_ID`|Invalid format for entitlement ID.|
+          |`NOT_FOUND`|Entitlement ID does not exist.|
+          |`UNAUTHORIZED`|Entitlement is not owned by the organization or the user when called with a user OAuth token.|
+          |`UPDATE_FAILED`|Indicates the entitlement update operation failed. Errors in the this state are expected to be be transient and should be retried later.|
+        </param>
+        <param name="id" array="1">
+          Array of unique identifiers of the entitlements for the specified status.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="RedeemCode" method="Post" path="entitlements/codes">
+      Redeems one or more redemption codes. Redeeming a code credits the user’s account with the entitlement associated with the code. For example, a Bits reward earned when playing a game.
+
+      Rate limit: You may send at most one request per second per user.
+      <query>
+        <param name="code">
+          The redemption code to redeem. To redeem multiple codes, include this parameter for each redemption code. For example, `code=1234&amp;code=5678`. You may specify a maximum of 20 codes.
+        </param>
+        <param name="user_id">
+          The ID of the user that owns the redemption code to redeem.
+        </param>
+      </query>
+      <response>
+        <param name="code">
+          The redemption code.
+        </param>
+        <param name="status">
+          The redemption code's status. Possible values are:
+          - ALREADY_CLAIMED — The code has already been claimed. All codes are single-use.
+          - EXPIRED — The code has expired and can no longer be claimed.
+          - INACTIVE — The code has not been activated.
+          - INCORRECT_FORMAT — The code is not properly formatted.
+          - INTERNAL_ERROR — An internal or unknown error occurred when accessing the code.
+          - NOT_FOUND — The code was not found.
+          - SUCCESSFULLY_REDEEMED — Successfully redeemed the code and credited the user's account with the entitlement.
+          - UNUSED — The code has not been claimed.
+          - USER_NOT_ELIGIBLE — The user is not eligible to redeem this code.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <!-- TODO: Extension collection (most of these endpoints require JWTs, which are not implemented in this client -->
+
+  <collection name="eventsub" method="Post" path="eventsub/subscriptions">
+    <endpoint name="CreateEventSubDescription">
+      Creates an EventSub subscription.
+
+      To create a subscription, you must use an app access token; however, if the subscription type requires user authorization, the user must have granted your app permissions to receive those events before you subscribe to them. For example, to subscribe to channel.subscribe events, the user must have granted your app permission which adds the `channel:read:subscriptions` scope to your app's client ID.
+      <request>
+        <param name="type">
+          The type of subscription to create. For a list of subscriptions you can create, see [Subscription Types](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#subscription-types). Set `type` to the value in the **Name** column of the Subscription Types table.
+        </param>
+        <param name="version">
+          The version of the subscription type used in this request. A subscription type could define one or more object definitions, so you need to specify which definition you’re using.
+        </param>
+        <param name="condition" type="map">
+          The parameter values that are specific to the specified subscription type.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details, such as the transport method and callback URL, that you want Twitch to use when sending you notifications.
+        </param>
+      </request>
+      <response>
+        <param name="id">
+          An ID that identifies the subscription.
+        </param>
+        <param name="status">
+          The status of the create subscription request. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL. To determine if the subscription moved from pending to another state, send a GET request and use the ID to find the subscription in the list.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type">
+          The type of subscription.
+        </param>
+        <param name="version">
+          The version of the subscription type.
+        </param>
+        <param name="condition" type="map">
+          The parameter values for the subscription type.
+        </param>
+        <param name="created_at" type="string">
+          The [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) timestamp indicating when the subscription was created.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details used to send you notifications.
+        </param>
+        <param name="cost" type="int">
+          The amount that the subscription counts against your limit. [Learn More](https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscription-limits)
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="DeleteEventSubSubscription" method="Delete" path="eventsub/subscriptions">
+      Deletes an EventSub subscription.
+      <query>
+        <param name="id">
+          The ID of the subscription to delete. This is the ID that Create Eventsub Subscription returns.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetEventSubSubscriptions" path="eventsub/subscriptions">
+      Gets a list of your EventSub subscriptions. The list is paginated and ordered by the oldest subscription first.
+      <query>
+        <param name="status" optional="1">
+          Filter subscriptions by its status. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type" optional="1">
+          Filter subscriptions by subscription type (e.g., `channel.update`). For a list of subscription types, see [Subscription Types](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#subscription-types).
+        </param>
+        <param name="user_id" optional="1">
+          Filter subscriptions by user ID. The response contains subscriptions where the user ID matches a user ID that you specified in the **Condition** object when you created the subscription.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The `pagination` object in the response contains the cursor's value.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the subscription.
+        </param>
+        <param name="status">
+          The status of the create subscription request. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL. To determine if the subscription moved from pending to another state, send a GET request and use the ID to find the subscription in the list.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type">
+          The type of subscription.
+        </param>
+        <param name="version">
+          The version of the subscription type.
+        </param>
+        <param name="condition" type="map">
+          The parameter values for the subscription type.
+        </param>
+        <param name="created_at" type="string">
+          The [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) timestamp indicating when the subscription was created.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details used to send you notifications.
+        </param>
+        <param name="cost" type="int">
+          The amount that the subscription counts against your limit. [Learn More](https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscription-limits)
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="games">
+    <endpoint name="GetTopGames" path="games/top">
+      Gets games sorted by number of current viewers on Twitch, most popular first.
+
+      The response has a JSON payload with a `data` field containing an array of games information elements and a `pagination` field containing information required to query for more streams.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Game ID.
+        </param>
+        <param name="name">
+          Game name.
+        </param>
+        <param name="box_art_url">
+          Template URL for a game's box art.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGames" path="games">
+      Gets game information by game ID or name.
+
+      The response has a JSON payload with a `data` field containing an array of games elements.
+
+      For a query to be valid, `name` and/or `id` must be specified.
+      <query>
+        <param name="id" optional="1">
+          Game ID. At most 100 `id` values can be specified.
+        </param>
+        <param name="name" optional="1">
+          Game name. The name must be an exact match. For example, “Pokemon” will not return a list of Pokemon games; instead, query any specific Pokemon games in which you are interested. At most 100 `name` values can be specified.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Game ID.
+        </param>
+        <param name="name">
+          Game name.
+        </param>
+        <param name="box_art_url">
+          Template URL for a game's box art.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="goals">
+    <endpoint name="GetCreatorGoals" scope="channel:read:goals" path="goals">
+      Gets the broadcaster's list of active goals. Use this to get the current progress of each goal.
+
+      Alternatively, you can subscribe to receive notifications when a goal makes progress using the [channel.goal.progress](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelgoalprogress) subscription type. [Read more](https://dev.twitch.tv/docs/api/goals#requesting-event-notifications)
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that created the goals. The ID must match the user ID associated with the user OAuth token. In other words, only the broadcaster can see their goals.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that uniquely identifies this goal.
+        </param>
+        <param name="broadcaster_id">
+          An ID that uniquely identifies the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          The broadcaster's display name.
+        </param>
+        <param name="broadcaster_login">
+          The broadcaster's user handle.
+        </param>
+        <param name="type">
+          The type of goal. Possible values are:
+          - follower — The goal is to increase followers.
+          - subscription — The goal is to increase subscriptions. This type shows the net increase or decrease in tier points associated with the subscriptions.
+          - subscription_count — The goal is to increase subscriptions. This type shows the net increase or decrease in the number of subscriptions.
+          - new_subscription — The goal is to increase subscriptions. This type shows only the net increase in tier points associated with the subscriptions (it does not account for users that unsubscribed since the goal started).
+          - new_subscription_count — The goal is to increase subscriptions. This type shows only the net increase in the number of subscriptions (it does not account for users that unsubscribed since the goal started).
+        </param>
+        <param name="description">
+          A description of the goal, if specified. The description may contain a maximum of 40 characters.
+        </param>
+        <param name="current_amount" type="int">
+          The goal's current value.
+
+          The goal's type determines how this value is increased or decreased.
+          - If `type` is follower, this field is set to the broadcaster's current number of followers. This number increases with new followers and decreases when users unfollow the broadcaster.
+          - If `type` is subscription, this field is increased and decreased by the points value associated with the subscription tier. For example, if a tier-two subscription is worth 2 points, this field is increased or decreased by 2, not 1.
+          - If `type` is subscription_count, this field is increased by 1 for each new subscription and decreased by 1 for each user that unsubscribes.
+          - If `type` is new_subscription, this field is increased by the points value associated with the subscription tier. For example, if a tier-two subscription is worth 2 points, this field is increased by 2, not 1.
+          - If `type` is new_subscription_count, this field is increased by 1 for each new subscription.
+        </param>
+        <param name="target_amount" type="int">
+          The goal's target value. For example, if the broadcaster has 200 followers before creating the goal, and their goal is to double that number, this field is set to 400.
+        </param>
+        <param name="created_at">
+          The UTC timestamp in [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) format, which indicates when the broadcaster created the goal.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="hypetrain">
+    <endpoint name="GetHypeTrainEvents" scope="channel:read:hype_train" path="hypetrain/events">
+      Gets the information of the most recent Hype Train of the given channel ID. When there is currently an active Hype Train, it returns information about that Hype Train. When there is currently no active Hype Train, it returns information about the most recent Hype Train. After 5 days, if no Hype Train has been active, the endpoint will return an empty response.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster. Must match the User ID in the Bearer token if User Token is used.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 1.
+        </param>
+        <param name="cursor" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without id. If an ID is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the pagination response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          The distinct ID of the event
+        </param>
+        <param name="event_type">
+          Displays hypetrain.{event_name}, currently only hypetrain.progression
+        </param>
+        <param name="event_timestamp">
+          RFC3339 formatted timestamp of event
+        </param>
+        <param name="version">
+          Returns the version of the endpoint
+        </param>
+        <param name="event_data" type="object">
+          Data pertaining to the event.
+          <param name="id">
+            The distinct ID of this Hype Train
+          </param>
+          <param name="broadcaster_id">
+            Channel ID of which Hype Train events the clients are interested in
+          </param>
+          <param name="started_at">
+            RFC3339 formatted timestamp of when this Hype Train started
+          </param>
+          <param name="expires_at">
+            RFC3339 formatted timestamp of the expiration time of this Hype Train
+          </param>
+          <param name="cooldown_end_time">
+            RFC3339 formatted timestamp of when another Hype Train can be started again
+          </param>
+          <param name="level" type="int">
+            The highest level (in the scale of 1-5) reached of the Hype Train
+          </param>
+          <param name="goal" type="int">
+            The goal value of the level above
+          </param>
+          <param name="total" type="int">
+            The total score so far towards completing the level goal above
+          </param>
+          <param name="top_contributions" type="object" array="1">
+            An array of top contribution objects, one object for each type. For example, one object would represent top contributor of BITS, by aggregate, and one would represent top contributor of SUBS by count.
+            <param name="user">
+              ID of the contributing user
+            </param>
+            <param name="type">
+              Identifies the contribution method, either `BITS` or `SUBS`
+            </param>
+            <param name="total" type="int">
+              Total aggregated amount of all contributions by the top contributor. If type is `BITS`, total represents aggregate amount of bits used.  If type is `SUBS`, aggregate total where 500, 1000, or 2500 represent tier 1, 2, or 3 subscriptions respectively.  For example, if top contributor has gifted a tier 1, 2, and 3 subscription, total would be 4000.
+            </param>
+          </param>
+          <param name="latest_contribution" type="object">
+            An object that represents the most recent contribution
+            <param name="user">
+              ID of the contributing user
+            </param>
+            <param name="type">
+              Identifies the contribution method, either `BITS` or `SUBS`
+            </param>
+            <param name="total" type="int">
+              Total aggregated amount of all contributions by the top contributor. If type is `BITS`, total represents aggregate amount of bits used.  If type is `SUBS`, aggregate total where 500, 1000, or 2500 represent tier 1, 2, or 3 subscriptions respectively.  For example, if top contributor has gifted a tier 1, 2, and 3 subscription, total would be 4000.
+            </param>
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
   <collection name="users">
     <endpoint name="GetUsers" path="users">
       <query>
@@ -1234,6 +1712,17 @@
       <param name="cost" type="int">
         The cost of the reward, in channel points.
       </param>
+    </param>
+  </commonobject>
+  <commonobject name="eventsub_transport">
+    <param name="method">
+      The transport method. Supported values: `webhook`.
+    </param>
+    <param name="callback">
+      The callback URL where the notification should be sent.
+    </param>
+    <param name="secret">
+      The secret used for verifying a signature.
     </param>
   </commonobject>
 </TwitchAPI>
