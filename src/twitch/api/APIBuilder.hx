@@ -202,6 +202,7 @@ class APIBuilder {
 			var kind = switch (param.get("type")) {
 				case "str" | "string" | null: (macro:String);
 				case "int" | "integer": (macro:Int);
+        case "float" | "decimal": (macro:Float);
 				case "bool" | "boolean": (macro:Bool);
 				case "obj" | "object": (buildAnonymous(root, param));
         // "map" would generally only be used if:
