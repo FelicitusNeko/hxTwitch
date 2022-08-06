@@ -33,6 +33,18 @@ typedef AppAccessResponse = {
 	var token_type:String;
 }
 
+/** Determines the type of authentication to be used for an API call. **/
+enum AuthenticationType {
+	/** Will first use OAuth if available; otherwise, will use the app access token. This is the default behaviour. **/
+	OAuthFirst;
+	/** Will first use OAuth if available; otherwise, will use the app access token. **/
+	AppAccessFirst;
+	/** Forces the use of the OAuth token. **/
+	OAuth;
+	/** Forces the use of the app access token. **/
+	AppAccess;
+}
+
 /** The Twitch API, PubSub, and Chat client. **/
 class Client {
 	//------------- Statics
@@ -157,7 +169,7 @@ class Client {
 		@param data Optional. The body of the request.
 		@return The data returned by the API endpoint.
 	**/
-	public function call(method:HttpMethod, endpoint:String, ?query:Map<String, Dynamic>, ?data:String):RawAPIResponse {
+	public function call(method:HttpMethod, endpoint:String, ?query:Map<String, Dynamic>, ?data:String, authType = OAuthFirst):RawAPIResponse {
 		var retval = new BytesOutput();
 		var url = baseURL + endpoint;
 		var req = new Http(url);
@@ -173,6 +185,7 @@ class Client {
 
 		//trace("Populating authentication");
 		req.addHeader("Client-Id", _clientId);
+		// TODO: implement authType
 		if (_oauthKey != null)
 			req.addHeader("Authorization", 'OAuth $_oauthKey');
 		else if (_appToken != null)

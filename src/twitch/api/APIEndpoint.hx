@@ -3,6 +3,7 @@ package twitch.api;
 import haxe.Exception;
 import haxe.http.HttpMethod;
 import haxe.Json;
+import twitch.Client;
 
 @:generic
 typedef APIResponse<R> = {
@@ -10,8 +11,11 @@ typedef APIResponse<R> = {
 	var ?code:Int;
 	/** The data returned by the API endpoint, if any. **/
 	var ?data:R;
+	/** The date range for the returned data. **/
 	var ?date_range:{
+		/** Start of the date range for the returned data. **/
 		var started_at:String;
+		/** End of the date range for the returned data. **/
 		var ended_at:String;
 	};
 	/** The total number of entries. **/
@@ -42,7 +46,7 @@ typedef APIResponse<R> = {
 
 class APIEndpoint {
 	@:generic
-	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Dynamic, ?data:Dynamic):APIResponse<R> {
+	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Dynamic, ?data:Dynamic, authType = OAuthFirst):APIResponse<R> {
 		if (query != null && !Reflect.isObject(query)) throw new Exception("Query data is not an object");
 
 		var queryMap:Map<String, Dynamic> = query == null ? null : [];
@@ -51,7 +55,7 @@ class APIEndpoint {
 				if (Reflect.field(query, key) != null)
 					queryMap.set(key, Reflect.field(query, key));
 
-		var apidata = client.call(method, endpoint, queryMap, data != null ? Json.stringify(data) : null);
+		var apidata = client.call(method, endpoint, queryMap, data != null ? Json.stringify(data) : null, authType);
 
 		var retval:APIResponse<R> = {};
 
