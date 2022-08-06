@@ -10,16 +10,17 @@ import twitch.api.APIEndpoint;
 using StringTools;
 
 class APIBuilder {
-  /** String values that represent a `true` boolean state. **/
+	/** String values that represent a `true` boolean state. **/
 	public static var truthy = ["1", "true", "on", "yes"];
-  /** String values that represent a `false` boolean state. **/
+
+	/** String values that represent a `false` boolean state. **/
 	public static var falsy = ["0", "false", "off", "no"];
 
-  /**
-    Builds a set of API functions.
-    @param collection The collection to load from the definition file.
-    @return The array of fields to replace those in the target class.
-  **/
+	/**
+		Builds a set of API functions.
+		@param collection The collection to load from the definition file.
+		@return The array of fields to replace those in the target class.
+	**/
 	public static macro function build(collection:String):Array<Field> {
 		var fields = Context.getBuildFields();
 
@@ -52,7 +53,7 @@ class APIBuilder {
 		// 	}
 
 		var defsFile = Path.join([Path.directory(Context.getPosInfos(Context.currentPos()).file), "Definition.xml"]);
-    var root = Xml.parse(File.getContent(defsFile)).firstElement();
+		var root = Xml.parse(File.getContent(defsFile)).firstElement();
 		var collections = root.elementsNamed("collection");
 		var def:Xml = null;
 		var endpointCount = 0;
@@ -118,11 +119,14 @@ class APIBuilder {
 										type: buildAnonymous(root, node)
 									});
 								case "response":
-									funcdef.ret = TPath({name: "APIResponse", params: [TPType(buildAnonymous(root, node,
-										!falsy.contains(node.get("array"))))], pack: []});
-                case "nullresponse":
-                  funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
-                default:
+									funcdef.ret = TPath({
+										name: "APIResponse",
+										params: [TPType(buildAnonymous(root, node, !falsy.contains(node.get("array"))))],
+										pack: []
+									});
+								case "nullresponse":
+									funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
+								default:
 							}
 						case PCData:
 							if (node.nodeValue != null) {
@@ -134,12 +138,13 @@ class APIBuilder {
 					}
 
 				if (funcdef.ret == null) {
-          // Delete-method endpoints are likely to return 204 No Content; allow this implicitly
+					// Delete-method endpoints are likely to return 204 No Content; allow this implicitly
 					if (method == "Delete")
-            funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
-          // Anything else must specify explicitly with <nullresponse /> or else it's an error
-          else Context.error('No return type for endpoint $collection.$endpoint', Context.currentPos());
-        }
+						funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
+					// Anything else must specify explicitly with <nullresponse /> or else it's an error
+					else
+						Context.error('No return type for endpoint $collection.$endpoint', Context.currentPos());
+				}
 
 				if (hasBody) {
 					if (hasQuery)
@@ -174,45 +179,53 @@ class APIBuilder {
 		return fields;
 	}
 
-  /**
-    Builds an anonymous structure.
-    @param node The XML node on which to base the construction.
-    @param responseArray Whether the result should be enclosed in an `Array`, which is the case for most responses.
-    @return The anonymous structure. If `responseArray` is true, it will be contained in an `Array`.
-  **/
+	/**
+		Builds an anonymous structure.
+		@param node The XML node on which to base the construction.
+		@param responseArray Whether the result should be enclosed in an `Array`, which is the case for most responses.
+		@return The anonymous structure. If `responseArray` is true, it will be contained in an `Array`.
+	**/
 	public static function buildAnonymous(root:Xml, node:Xml, responseArray = false) {
 		var retval:Array<Field> = [];
-    var commonRef = node.get("commonref");
+		var commonRef = node.get("commonref");
+    var parent = node.parent;
+    while (!["endpoint", "commonobject"].contains(parent.nodeName))
+      parent = parent.parent;
 
-    if (commonRef != null) {
-      var found = false;
-      for (commonobj in root.elementsNamed("commonobject"))
-        if (commonobj.get("name") == commonRef) {
-          node = commonobj;
-          found = true;
-          break;
-        }
-      if (!found) Context.error('Reference to undefined common object $commonRef', Context.currentPos());
-    }
+		if (commonRef != null) {
+			var found = false;
+			for (commonobj in root.elementsNamed("commonobject"))
+				if (commonobj.get("name") == commonRef) {
+					node = commonobj;
+					found = true;
+					break;
+				}
+			if (!found)
+				Context.error('Reference to undefined common object $commonRef in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
+		}
 
-		for (param in node.elements()) {
-			// trace(param);
+		for (param in node.elementsNamed("param")) {
+			var name = param.get("name");
+			if (name == null)
+				Context.error('Missing parameter name in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
+			else if (!~/[a-zA-Z_][a-zA-Z0-9_]+/.match(name))
+				Context.error('Invalid parameter name $name in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
+
 			var optional = truthy.contains(param.get("optional"));
-			var isArray = truthy.contains(param.get("array"));
 			var kind = switch (param.get("type")) {
 				case "str" | "string" | null: (macro:String);
 				case "int" | "integer": (macro:Int);
-        case "float" | "decimal": (macro:Float);
+				case "float" | "decimal": (macro:Float);
 				case "bool" | "boolean": (macro:Bool);
 				case "obj" | "object": (buildAnonymous(root, param));
-        // "map" would generally only be used if:
-        // 1) keys may start with digits or contain illegal characters for variable names
-        // 2) key names are not fixed and may vary
-        case "map": (macro:DynamicAccess<String>);
-				case x: Context.error('Unknown type $x', Context.currentPos());
+				// "map" would generally only be used if:
+				// 1) keys may start with digits or contain illegal characters for variable names
+				// 2) key names are not fixed and may vary
+				case "map": (macro:DynamicAccess<String>);
+				case x: Context.error('Unknown type $x in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
 			};
 
-			if (isArray)
+			if (truthy.contains(param.get("array")))
 				kind = TPath({name: "Array", params: [TPType(kind)], pack: []});
 
 			var field:Field = {
@@ -221,11 +234,16 @@ class APIBuilder {
 				pos: Context.currentPos(),
 				meta: optional ? [{name: ":optional", pos: Context.currentPos()}] : null
 			}
-			// trace(field.kind);
+
+			if (truthy.contains(param.get("deprecated"))) {
+				if (field.meta == null)
+					field.meta = [];
+				field.meta.push({name: "deprecated", pos: Context.currentPos()});
+			}
 
 			for (member in param)
 				if (member.nodeType == PCData && member.nodeValue != null) {
-					if (field.pos == null)
+					if (field.doc == null)
 						field.doc = "";
 					field.doc += member.nodeValue.trim();
 				}
