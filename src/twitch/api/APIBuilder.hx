@@ -119,10 +119,13 @@ class APIBuilder {
 										type: buildAnonymous(root, node)
 									});
 								case "response":
+                  // This is pretty much 100% here for DeleteVideos, which not only doesn't return 204, but returns an array of strings without any structure
+									var rkind = (node.get("type") == "string") ? (macro:String) : buildAnonymous(root, node,
+										!falsy.contains(node.get("array")));
 									funcdef.ret = TPath({
 										name: "APIResponse",
-										params: [TPType(buildAnonymous(root, node, !falsy.contains(node.get("array"))))],
-										pack: []
+										params: [TPType(rkind)],
+										pack: [],
 									});
 								case "nullresponse":
 									funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
@@ -188,9 +191,9 @@ class APIBuilder {
 	public static function buildAnonymous(root:Xml, node:Xml, responseArray = false) {
 		var retval:Array<Field> = [];
 		var commonRef = node.get("commonref");
-    var parent = node.parent;
-    while (!["endpoint", "commonobject"].contains(parent.nodeName))
-      parent = parent.parent;
+		var parent = node.parent;
+		while (!["endpoint", "commonobject"].contains(parent.nodeName))
+			parent = parent.parent;
 
 		if (commonRef != null) {
 			var found = false;
