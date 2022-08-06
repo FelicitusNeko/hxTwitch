@@ -3215,7 +3215,7 @@
   </collection>
 
   <collection name="videos">
-    <endpoint name="GetVideos">
+    <endpoint name="GetVideos" path="videos">
       Gets video information by one or more video IDs, user ID, or game ID. For lookup by user or game, several filters are available that can be specified as query parameters.
 
       Each request must specify one or more video `id`s, one `user_id`, or one `game_id`. Other optional parameters can be used if the request specifies a `user_id` or `game_id`, not a video `id`.
