@@ -1,20 +1,10 @@
 <!--
- Copyright 2022 FelicitusNeko
+ Copyright (c) 2022 FelicitusNeko
  
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
- 
-     http://www.apache.org/licenses/LICENSE-2.0
- 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ This software is released under the MIT License.
+ https://opensource.org/licenses/MIT
 -->
 <TwitchAPI>
-
   <collection name="ads">
     <endpoint name="StartCommercial" scope="channel:edit:commercial" method="Post" path="channels/commercial" >
       Starts a commercial on a specified channel.
@@ -191,7 +181,9 @@
         </param>
       </response>
     </endpoint>
+
     <!-- TODO: GetCheermotes -->
+
     <endpoint name="GetExtensionTransactions" path="extensions/transactions">
       Gets the list of Extension transactions for a given Extension. This allows Extension back-end servers to fetch a list of transactions that have occurred for their Extension across all of Twitch. A transaction is a record of a user exchanging Bits for an in-Extension digital good.
       <query>
@@ -435,7 +427,7 @@
       </query>
       <response commonref="custom_reward" />
     </endpoint>
-    <endpoint name="GetCustomRewardRedemption" scope="channel:read:redemptions" path="custom_rewards/redemptions">
+    <endpoint name="GetCustomRewardRedemption" scope="channel:read:redemptions" path="channel_points/custom_rewards/redemptions">
       Returns Custom Reward Redemption objects for a Custom Reward on a channel that was created by the same `client_id`.
 
       Developers only have access to get and update redemptions for the rewards created programmatically by the same `client_id`.
@@ -475,7 +467,7 @@
       </query>
       <response commonref="custom_reward" />
     </endpoint>
-    <endpoint name="UpdateRedemptionStatus" scope="channel:manage:redemptions" method="Patch" path="custom_rewards/redemptions">
+    <endpoint name="UpdateRedemptionStatus" scope="channel:manage:redemptions" method="Patch" path="channel_points/custom_rewards/redemptions">
       Updates the status of Custom Reward Redemption objects on a channel that are in the UNFULFILLED status.
 
       The Custom Reward Redemption specified by id must be for a Custom Reward created by the client_id attached to the user OAuth token.
@@ -1234,8 +1226,8 @@
 
   <!-- TODO: Extension collection (most of these endpoints require JWTs, which are not implemented in this client -->
 
-  <collection name="eventsub" method="Post" path="eventsub/subscriptions">
-    <endpoint name="CreateEventSubDescription">
+  <collection name="eventsub">
+    <endpoint name="CreateEventSubDescription" method="Post" path="eventsub/subscriptions">
       Creates an EventSub subscription.
 
       To create a subscription, you must use an app access token; however, if the subscription type requires user authorization, the user must have granted your app permissions to receive those events before you subscribe to them. For example, to subscribe to channel.subscribe events, the user must have granted your app permission which adds the `channel:read:subscriptions` scope to your app's client ID.
@@ -1543,6 +1535,789 @@
     </endpoint>
   </collection>
 
+  <collection name="moderation">
+    <endpoint name="CheckAutoModStatus" scope="moderation:read" method="Post" path="moderation/enforcements/status">
+      Determines whether a string message meets the channel's AutoMod requirements.
+
+      AutoMod is a moderation tool that blocks inappropriate or harassing chat with powerful moderator control. AutoMod detects misspellings and evasive language automatically. AutoMod uses machine learning and natural language processing algorithms to hold risky messages from chat so they can be reviewed by a channel moderator before appearing to other viewers in the chat. Moderators can approve or deny any message caught by AutoMod.
+
+      For more information about AutoMod, see [How to Use AutoMod](https://help.twitch.tv/s/article/how-to-use-automod).
+
+      Rate Limits: Rates are limited per channel based on the account type rather than per access token.
+      |Account type|Limit per minute|Limit per hour|
+      |-|-|-|
+      |Normal|5|50|
+      |Affiliate|10|100|
+      |Partner|30|300|
+
+      The above limits are in addition to the standard [Twitch API rate limits](https://dev.twitch.tv/docs/api/guide#twitch-rate-limits). The rate limit headers in the response represent the Twitch rate limits and not the above limits.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the auth token.
+        </param>
+      </query>
+      <request>
+        <param name="msg_id">
+          Developer-generated identifier for mapping messages to results.
+        </param>
+        <param name="msg_text">
+          Message text.
+        </param>
+      </request>
+      <response>
+        <param name="msg_id">
+          The `msg_id` passed in the body of the `POST` message. Maps each message to its status.
+        </param>
+        <param name="is_permitted" type="bool">
+          Indicates if this message meets AutoMod requirements.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="ManageHeldAutoModMessages" scope="moderator:manage:automod" method="Post" path="moderation/automod/message">
+      Allow or deny a message that was held for review by AutoMod.
+
+      In order to retrieve messages held for review, use the `chat_moderator_actions` topic via [PubSub](https://dev.twitch.tv/docs/pubsub). For more information about AutoMod, see [How to Use AutoMod](https://help.twitch.tv/s/article/how-to-use-automod).
+      <request>
+        <param name="user_id">
+          The moderator who is approving or rejecting the held message. Must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="msg_id">
+          ID of the message to be allowed or denied. These message IDs are retrieved from PubSub as mentioned above. Only one message ID can be provided.
+        </param>
+        <param name="action">
+          The action to take for the message. Must be `"ALLOW"` or `"DENY"`.
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="GetAutoModSettings" scope="moderator:read:automod_settings" path="moderation/automod/settings">
+      Gets the broadcaster's AutoMod settings, which are used to automatically block inappropriate or harassing messages from appearing in the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to get.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to get their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster's ID.
+        </param>
+        <param name="moderator_id">
+          The moderator's ID.
+        </param>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster. This field is null if the broadcaster has set one or more of the individual settings.
+        </param>
+        <param name="disability" type="int">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int">
+          The Automod level for sexual content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateAutoModSettings" scope="moderator:manage:automod_settings" method="Put" path="moderation/automod/settings">
+      Updates the broadcaster's AutoMod settings, which are used to automatically block inappropriate or harassing messages from appearing in the broadcaster's chat room.
+
+      **Request Body**
+
+      Because PUT is an overwrite operation, you must include all the fields you want set after the operation completes. Typically, you'll send a GET request, update the fields you want to change, and pass that object in the PUT request.
+
+      You can set either `overall_level` or the individual settings like `aggression`, but not both.
+
+      Setting `overall_level` applies default values to the individual settings. However, setting `overall_level` to 4 does not mean that it applies 4 to all the individual settings. Instead, it applies a set of recommended defaults to the rest of the settings. For example, if you set `overall_level` to 2, Twitch provides some filtering on discrimination and sexual content, but more filtering on hostility (see the first example response).
+
+      If `overall_level` is currently set and you update swearing to 3, `overall_level` will be set to null and all settings other than `swearing` will be set to 0. The same is true if individual settings are set and you update `overall_level` to 3 — all the individual settings are updated to reflect the default level.
+
+      Note that if you set all the individual settings to values that match what `overall_level` would have set them to, Twitch changes AutoMod to use the default AutoMod level instead of using the individual settings.
+
+      Valid values for all levels are from 0 (no filtering) through 4 (most aggressive filtering). These levels affect how aggressively AutoMod holds back messages for moderators to review before they appear in chat or are denied (not shown).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to update.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster.
+        </param>
+        <param name="disability" type="int" optional="1">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int" optional="1">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int" optional="1">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int" optional="1">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int" optional="1">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int" optional="1">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int" optional="1">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int" optional="1">
+          The Automod level for sexual content.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster's ID.
+        </param>
+        <param name="moderator_id">
+          The moderator's ID.
+        </param>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster. This field is null if the broadcaster has set one or more of the individual settings.
+        </param>
+        <param name="disability" type="int">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int">
+          The Automod level for sexual content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetBannedUsers" scope="moderation:read" path="moderation/banned">
+      Returns all banned and timed-out users for a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the OAuth token.
+        </param>
+        <param name="user_id" optional="1">
+          Filters the results and only returns a status object for users who are banned in the channel and have a matching user_id.
+
+          Multiple user IDs can be provided, e.g. `/moderation/banned/events?broadcaster_id=1&amp;user_id=2&amp;user_id=3`
+
+          Maximum: 100.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 100.
+          Default: 1.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset. combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of the banned user.
+        </param>
+        <param name="user_login">
+          Login of the banned user.
+        </param>
+        <param name="user_name">
+          Display name of the banned user.
+        </param>
+        <param name="expires_at">
+          The UTC date and time (in RFC3999 format) when the timeout expires, or an empty string if the user is permanently banned.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3999 format) when the ban was created.
+        </param>
+        <param name="reason">
+          The reason for the ban if provided by the moderator.
+        </param>
+        <param name="moderator_id">
+          User ID of the moderator who initiated the ban.
+        </param>
+        <param name="moderator_login">
+          Login of the moderator who initiated the ban.
+        </param>
+        <param name="moderator_name">
+          Display name of the moderator who initiated the ban.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="BanUser" scope="moderator:manage:banned_users" method="Post" path="moderation/bans">
+      Bans a user from participating in a broadcaster's chat room, or puts them in a timeout. For more information about banning or putting users in a timeout, see [Ban a User](https://help.twitch.tv/s/article/how-to-manage-harassment-in-chat#TheBanFeature) and [Timeout a User](https://help.twitch.tv/s/article/how-to-manage-harassment-in-chat#TheTimeoutFeature).
+
+      If the user is currently in a timeout, you can call this endpoint to change the duration of the timeout or ban them altogether. If the user is currently banned, you cannot call this method to put them in a timeout instead.
+
+      To remove a ban or end a timeout, see UnbanUser.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat room the user is being banned from.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="data" type="object">
+          The user to ban or put in a timeout.
+          <param name="duration" type="int" optional="1">
+            To ban a user indefinitely, don't include this field.
+
+            To put a user in a timeout, include this field and specify the timeout period, in seconds.
+            
+            The minimum timeout is 1 second and the maximum is 1,209,600 seconds (2 weeks).
+            
+            To end a user's timeout early, set this field to 1, or send an Unban user request.
+          </param>
+          <param name="reason">
+            The reason the user is being banned or put in a timeout. The text is user defined and limited to a maximum of 500 characters.
+          </param>
+          <param name="user_id">
+            The ID of the user to ban or put in a timeout.
+          </param>
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster whose chat room the user was banned from chatting in.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3999 format) when the ban was created.
+        </param>
+        <param name="end_time" optional="1">
+          The UTC date and time (in RFC3339 format) that the timeout will end. Is **null** if the user was banned instead of put in a timeout.
+        </param>
+        <param name="moderator_id">
+          The moderator that banned or put the user in the timeout.
+        </param>
+        <param name="user_id">
+          The user that was banned or was put in a timeout.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UnbanUser" scope="moderator:manage:banned_users" method="Delete" path="moderation/bans">
+      Removes the ban or timeout that was placed on the specified user (see Ban user).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to update.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove the ban or timeout from.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetBlockedTerms" scope="moderator:read:blocked_terms" path="moderation/blocked_terms">
+      Gets the broadcaster's list of non-private, blocked words or phrases. These are the terms that the broadcaster or moderator added manually, or that were denied by AutoMod.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose blocked terms you're getting.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The **Pagination** object in the response contains the cursor's value.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of blocked terms to return per page in the response. The minimum page size is 1 blocked term per page and the maximum is 100. The default is 20.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The moderator that blocked the word or phrase from being used in the broadcaster's chat room.
+        </param>
+        <param name="id">
+          An ID that uniquely identifies this blocked term.
+        </param>
+        <param name="text">
+          The blocked word or phrase.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3339 format) of when the term was blocked.
+        </param>
+        <param name="updated_at">
+          The UTC date and time (in RFC3339 format) of when the term was updated.
+
+          When the term is added, this timestamp is the same as created_at. The timestamp changes as AutoMod continues to deny the term.
+        </param>
+        <param name="expires_at" optional="1">
+          The UTC date and time (in RFC3339 format) of when the blocked term is set to expire. After the block expires, user's will be able to use the term in the broadcaster's chat room.
+
+          This field is **null** if the term was added manually or was permanently blocked by AutoMod.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddBlockedTerm" scope="moderator:manage:blocked_terms" method="Post" path="moderation/blocked_terms">
+      Adds a word or phrase to the broadcaster's list of blocked terms. These are the terms that broadcasters don't want used in their chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+  
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="text">
+          The word or phrase to block from being used in the broadcaster's chat room.
+
+          The term must contain a minimum of 2 characters and may contain up to a maximum of 500 characters.
+
+          Terms can use a wildcard character (*). The wildcard character must appear at the beginning or end of a word, or set of characters. For example, *foo or foo*.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The moderator that blocked the word or phrase from being used in the broadcaster's chat room.
+        </param>
+        <param name="id">
+          An ID that uniquely identifies this blocked term.
+        </param>
+        <param name="text">
+          The blocked word or phrase.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3339 format) of when the term was blocked.
+        </param>
+        <param name="updated_at">
+          The UTC date and time (in RFC3339 format) of when the term was updated.
+
+          When the term is added, this timestamp is the same as created_at. The timestamp changes as AutoMod continues to deny the term.
+        </param>
+        <param name="expires_at" optional="1">
+          The UTC date and time (in RFC3339 format) of when the blocked term is set to expire. After the block expires, user's will be able to use the term in the broadcaster's chat room.
+
+          This field is **null** if the term was added manually or was permanently blocked by AutoMod.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="RemoveBlockedTerm" scope="moderator:manage:blocked_terms" method="Delete" path="moderation/blocked_terms">
+      Removes the word or phrase that the broadcaster is blocking users from using in their chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+  
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="id">
+          The ID of the blocked term you want to delete.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="DeleteChatMessages" scope="moderator:manage:chat_messages" method="Delete" path="moderation/chat">
+      Removes a single chat message or all chat messages from the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room to remove messages from.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID in the OAuth token. If the broadcaster wants to remove messages themselves (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="message_id" optional="1">
+          The ID of the message to remove. The `id` tag in the `PRIVMSG` contains the message's ID (see [PRIVMSG Tags](https://dev.twitch.tv/docs/irc/tags#privmsg-tags). Restrictions:
+          - The message must have been created within the last 6 hours.
+          - The message must not belong to the broadcaster.
+
+          If not specified, the request removes all messages in the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetModerators" scope="moderation:read" path="moderation/moderators">
+      Returns all moderators in a channel. Note: This endpoint does not return the broadcaster in the response, as broadcasters are channel owners and have all permissions of moderators implicitly.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the auth token. Maximum: 1
+        </param>
+        <param name="user_id" optional="1">
+          Filters the results and only returns a status object for users who are moderators in this channel and have a matching user_id.
+
+          Format: Repeated Query Parameter, eg. `/moderation/moderators?broadcaster_id=1&amp;user_id=2&amp;user_id=3`
+
+          Maximum: 100
+        </param>
+        <param name="first">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of a moderator in the channel.
+        </param>
+        <param name="user_login">
+          Login of a moderator in the channel.
+        </param>
+        <param name="user_name">
+          Display name of a moderator in the channel.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddChannelModerator" scope="channel:manage:moderators" method="Post" path="moderation/moderators">
+      Adds a moderator to the broadcaster's chat room.
+
+      **Rate Limits**: The channel may add a maximum of 10 moderators within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room.
+        </param>
+        <param name="user_id">
+          The ID of the user to add as a moderator in the broadcaster's chat room.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="RemoveChannelModerator" scope="channel:manage:moderators" method="Delete" path="moderation/moderators">
+      Removes a moderator from the broadcaster's chat room.
+
+      *Rate Limits*: The channel may remove a maximum of 10 moderators within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove as a moderator from the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetVIPs" scope="channel:read:vips" path="channels/vips">
+      Gets a list of the channel's VIPs.
+      <query>
+        <param name="broadcaster_name">
+          The ID of the broadcaster whose list of VIPs you want to get.
+        </param>
+        <param name="user_id" optional="1">
+          Filters the list for specific VIPs. To specify more than one user, include the user_id parameter for each user to get. For example, `&amp;user_id=1234&amp;user_id=5678`. The maximum number of IDs that you may specify is 100. Ignores those users in the list that aren't VIPs.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of items to return per page in the response. The minimum page size is 1 item per page and the maximum is 100. The default is 20.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The **Pagination** object in the response contains the cursor's value. [Read more](https://dev.twitch.tv/docs/api/guide#pagination).
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          An ID that uniquely identifies the VIP user.
+        </param>
+        <param name="user_name">
+          The user's display name.
+        </param>
+        <param name="user_login">
+          The user's login name.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddChannelVIP" scope="channel:manage:vips" method="Post" path="channels/vips">
+      Adds a VIP to the broadcaster's chat room.
+
+      **Rate Limits**: The channel may add a maximum of 10 VIPs within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's granting VIP status to the user.
+        </param>
+        <param name="user_id">
+          The ID of the user to add as a VIP in the broadcaster's chat room.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="RemoveChannelVIP" scope="channel:manage:vips" method="Delete" path="channel/vips">
+      Removes a VIP from the broadcaster's chat room.
+
+      **Rate Limits**: The channel may remove a maximum of 10 VIPs within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's removing VIP status from the user.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove as a VIP in the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+  </collection>
+
+  <collection name="polls">
+    <endpoint name="GetPolls" scope="channel:read:polls" path="polls">
+      Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          ID of a poll. Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel.
+
+          Maximum: 100
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 20. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="poll" />
+    </endpoint>
+    <endpoint name="CreatePoll" scope="channel:manage:polls" method="Post" path="polls">
+      Create a poll for a specific Twitch channel.
+      <request>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="title">
+          Question displayed for the poll.
+
+          Maximum: 60 characters.
+        </param>
+        <param name="choices" type="object" array="1">
+          Array of the poll choices.
+
+          Minimum: 2 choices. Maximum: 5 choices.
+          <param name="title">
+            Text displayed for the choice.
+
+            Maximum: 25 characters.
+          </param>
+        </param>
+        <param name="duration" type="int">
+          Total duration for the poll (in seconds).
+
+          Minimum: 15. Maximum: 1800.
+        </param>
+        <param name="bits_voting_enabled" type="bool" optional="1">
+          Indicates if Bits can be used for voting.
+
+          Default: `false`
+        </param>
+        <param name="bits_per_vote" type="int" optional="1">
+          Number of Bits required to vote once with Bits.
+
+          Minimum: 0. Maximum: 10000.
+        </param>
+        <param name="channel_points_voting_enabled" type="bool" optional="1">
+          Indicates if Channel Points can be used for voting.
+
+          Default: `false`
+        </param>
+        <param name="channel_points_per_vote" type="int" optional="1">
+          Number of Channel Points required to vote once with Channel Points.
+
+          Minimum: 0. Maximum: 1000000.
+        </param>
+      </request>
+      <response commonref="poll" />
+    </endpoint>
+    <endpoint name="EndPoll" scope="channel:manage:polls" method="Patch" path="polls">
+      End a poll that is currently active.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          ID of the poll.
+        </param>
+        <param name="status">
+          The poll status to be set. Valid values:
+          - `TERMINATED`: End the poll manually, but allow it to be viewed publicly.
+          - `ARCHIVED`: End the poll manually and do not allow it to be viewed publicly.
+        </param>
+      </query>
+      <response commonref="poll" />
+    </endpoint>
+  </collection>
+
+  <collection name="predictions">
+    <endpoint name="GetPredictions" scope="channel:read:predictions" path="predictions">
+      Get information about all Channel Points Predictions or specific Channel Points Predictions for a Twitch channel. Results are ordered by most recent, so it can be assumed that the currently active or locked Prediction will be the first item.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running Predictions. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          ID of a Prediction. Filters results to one or more specific Prediction. Not providing one or more IDs will return the full list of Predictions for the authenticated channel.
+
+          Maximum: 100
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 20. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="prediction" />
+    </endpoint>
+    <endpoint name="CreatePrediction" scope="channel:manage:predictions" method="Post" path="predictions">
+      Create a Channel Points Prediction for a specific Twitch channel.
+      <request>
+        <param name="broadcaster_id">
+          The broadcaster running Predictions. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="title">
+          Title for the Prediction
+
+          Maximum: 45 characters.
+        </param>
+        <param name="outcomes" type="object" array="1">
+          The list of possible outcomes for the Prediction. The minimum number of outcomes that you may specify is 2 and the maximum is 10.
+          <param name="title">
+            Text displayed for the outcome choice.
+
+            Maximum: 25 characters.
+          </param>
+        </param>
+        <param name="prediction_window" type="int">
+          Total duration for the Prediction (in seconds).
+
+          Minimum: 1. Maximum: 1800.
+        </param>
+      </request>
+      <response commonref="prediction" />
+    </endpoint>
+    <endpoint name="EndPrediction" scope="channel:manage:predictions" method="Patch" path="predictions">
+      End a poll that is currently active.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running Prediction. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          ID of the poll.
+        </param>
+        <param name="status">
+          The Prediction status to be set. Valid values:
+          - `RESOLVED`: A winning outcome has been chosen and the Channel Points have been distributed to the users who predicted the correct outcome.
+          - `CANCELED`: The Prediction has been canceled and the Channel Points have been refunded to participants.
+          - `LOCKED`: The Prediction has been locked and viewers can no longer make predictions.
+        </param>
+        <param name="winning_outcome_id">
+          ID of the winning outcome for the Prediction. This parameter is required if `status` is being set to `RESOLVED`.
+        </param>
+      </query>
+      <response commonref="prediction" />
+    </endpoint>
+  </collection>
+
+  <collection name="raids">
+    <endpoint name="StartRaid" scope="channel:manage:raids" method="Post" path="raids">
+      Raid another channel by sending the broadcaster's viewers to the targeted channel.
+
+      When you call the API from a chat bot or extension, the Twitch UX pops up a window at the top of the chat room that identifies the number of viewers in the raid. The raid occurs when the broadcaster clicks **Raid Now** or after the 90 second countdown expires.
+
+      To cancel a pending raid, call Cancel a raid.
+
+      To determine whether the raid successfully occurred, you must subscribe to the [Channel Raid](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelraid) event. For more information, see [Get notified when a raid begins](https://dev.twitch.tv/docs/api/raids#get-notified-when-a-raid-begins).
+
+      **Rate Limit**: The limit is 10 requests within a 10-minute window.
+      <request>
+        <param name="from_broadcaster_id">
+          The ID of the broadcaster that's sending the raiding party.
+        </param>
+        <param name="to_broadcaster_id">
+          The ID of the broadcaster to raid.
+        </param>
+      </request>
+      <response>
+        <param name="created_at">
+          The UTC date and time, in RFC3339 format, when the raid request was created.
+        </param>
+        <param name="is_mature" type="bool">
+          A Boolean value that indicates whether the channel being raided contains mature content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="CancelRaid" scope="channel:manage:raids" method="Delete" path="raids">
+      Cancel a pending raid.
+
+      You can cancel a raid at any point up until the broadcaster clicks **Raid Now** in the Twitch UX or the 90 seconds countdown expires.
+
+      **Rate Limit**: The limit is 10 requests within a 10-minute window.
+      <request>
+        <param id="broadcaster_id">
+          The ID of the broadcaster that sent the raiding party.
+        </param>
+      </request>
+    </endpoint>
+  </collection>
+
   <collection name="users">
     <endpoint name="GetUsers" path="users">
       <query>
@@ -1723,6 +2498,146 @@
     </param>
     <param name="secret">
       The secret used for verifying a signature.
+    </param>
+  </commonobject>
+  <commonobject name="poll">
+    <param name="id">
+      ID of the poll.
+    </param>
+    <param name="broadcaster_id">
+      ID of the broadcaster.
+    </param>
+    <param name="broadcaster_name">
+      Name of the broadcaster.
+    </param>
+    <param name="broadcaster_login">
+      Login of the broadcaster.
+    </param>
+    <param name="title">
+      Question displayed for the poll.
+    </param>
+    <param name="choices" type="object" array="1">
+      Array of the poll choices.
+      <param name="id">
+        ID for the choice.
+      </param>
+      <param name="title">
+        Text displayed for the choice.
+      </param>
+      <param name="votes" type="int">
+        Total number of votes received for the choice across all methods of voting.
+      </param>
+      <param name="channel_points_votes" type="int">
+        Number of votes received via Channel Points.
+      </param>
+      <param name="bits_votes" type="int">
+        Number of votes received via Bits.
+      </param>
+    </param>
+    <param name="bits_voting_enabled" type="bool">
+      Indicates if Bits can be used for voting.
+    </param>
+    <param name="bits_per_vote" type="int">
+      Number of Bits required to vote once with Bits.
+    </param>
+    <param name="channel_points_voting_enabled" type="bool">
+      Indicates if Channel Points can be used for voting.
+    </param>
+    <param name="channel_points_per_vote" type="int">
+      Number of Channel Points required to vote once with Channel Points.
+    </param>
+    <param name="status">
+      Poll status. Valid values are:
+      - `ACTIVE`: Poll is currently in progress.
+      - `COMPLETED`: Poll has reached its `ended_at` time.
+      - `TERMINATED`: Poll has been manually terminated before its `ended_at` time.
+      - `ARCHIVED`: Poll is no longer visible on the channel.
+      - `MODERATED`: Poll is no longer visible to any user on Twitch.
+      - `INVALID`: Something went wrong determining the state.
+    </param>
+    <param name="duration" type="int">
+      Total duration for the poll (in seconds).
+    </param>
+    <param name="started_at">
+      UTC timestamp for the poll's start time.
+    </param>
+    <param name="ended_at" optional="1">
+      UTC timestamp for the poll's end time. Set to `null` if the poll is active.
+    </param>
+  </commonobject>
+  <commonobject name="prediction">
+    <param name="id">
+      ID of the Prediction.
+    </param>
+    <param name="broadcaster_id">
+      ID of the broadcaster.
+    </param>
+    <param name="broadcaster_name">
+      Name of the broadcaster.
+    </param>
+    <param name="broadcaster_login">
+      Login of the broadcaster.
+    </param>
+    <param name="title">
+      Question displayed for the poll.
+    </param>
+    <param name="winning_outcome_id" optional="1">
+      ID of the winning outcome. If the status is `ACTIVE`, this is set to `null`.
+    </param>
+    <param name="choices" type="object" array="1">
+      Array of possible outcomes for the Prediction.
+      <param name="id">
+        ID for the outcome.
+      </param>
+      <param name="title">
+        Text displayed for outcome.
+      </param>
+      <param name="users" type="int">
+        Number of unique users that chose the outcome.
+      </param>
+      <param name="channel_points" type="int">
+        Number of Channel Points used for the outcome.
+      </param>
+      <param name="top_predictors" type="object" array="1" optional="1">
+        Array of users who were the top predictors. `null` if none.
+        <param name="id">
+          ID of the user.
+        </param>
+        <param name="name">
+          Display name of the user.
+        </param>
+        <param name="login">
+          Login of the user.
+        </param>
+        <param name="channel_points_used" type="int">
+          Number of Channel Points used by the user.
+        </param>
+        <param name="channel_points_won" type="int">
+          Number of Channel Points won by the user.
+        </param>
+      </param>
+      <param name="color">
+        Color for the outcome. If the number of outcomes is two, the color is BLUE for the first one and PINK for the second one. If there are more than two outcomes, the color is BLUE for all of them.
+      </param>
+    </param>
+    <param name="prediction_window" type="int">
+      Total duration for the Prediction (in seconds).
+    </param>
+    <param name="status">
+      Status of the Prediction. Valid values are:
+      - `RESOLVED`: A winning outcome has been chosen and the Channel Points have been distributed to the users who guessed the correct outcome.
+      - `ACTIVE`: The Prediction is active and viewers can make predictions.
+      - `CANCELED`: The Prediction has been canceled and the Channel Points have been refunded to participants.
+      - `LOCKED`: The Prediction has been locked and viewers can no longer make predictions.
+    </param>
+    <param name="created_at">
+      UTC timestamp for the Prediction's start time.
+    </param>
+    <param name="ended_at" optional="1">
+      UTC timestamp for when the Prediction ended. If the status is `ACTIVE`, this is set to `null`.
+    </param>
+    <param name="locked_at" optional="1">
+      UTC timestamp for when the Prediction was locked. If the status is not `LOCKED`, this is set to `null`.
     </param>
   </commonobject>
 </TwitchAPI>
