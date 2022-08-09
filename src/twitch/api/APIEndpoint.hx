@@ -44,6 +44,7 @@ typedef APIResponse<R> = {
 	var ?points:Int;
 }
 
+@:noCompletion
 class APIEndpoint {
 	@:generic
 	public static function call<R>(method:HttpMethod, endpoint:String, client:Client, ?query:Dynamic, ?data:Dynamic, authType = OAuthFirst):APIResponse<R> {
