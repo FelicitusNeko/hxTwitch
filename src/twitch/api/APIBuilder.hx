@@ -1,11 +1,10 @@
 package twitch.api;
 
+#if macro
 import sys.io.File;
-import haxe.http.HttpMethod;
 import haxe.io.Path;
 import haxe.macro.Expr;
 import haxe.macro.Context;
-import twitch.api.APIEndpoint;
 
 using StringTools;
 
@@ -106,7 +105,6 @@ class APIBuilder {
 				for (node in endpoint)
 					switch (node.nodeType) {
 						case Element:
-							// trace("Building " + node.nodeName);
 							switch (node.nodeName) {
 								case x = "query" | "request":
 									if (x == "query")
@@ -152,23 +150,19 @@ class APIBuilder {
 				if (hasBody) {
 					if (hasQuery)
 						funcdef.expr = macro {
-							// trace("Calling endpoint with query and request");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, query, request);
 						}
 					else
 						funcdef.expr = macro {
-							// trace("Calling endpoint with request only");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, null, request);
 						}
 				} else {
 					if (hasQuery)
 						funcdef.expr = macro {
-							// trace("Calling endpoint with query only");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client, query);
 						}
 					else
 						funcdef.expr = macro {
-							// trace("Calling endpoint with no data");
 							return APIEndpoint.call(HttpMethod.$method, $v{path}, client);
 						}
 				}
@@ -256,3 +250,4 @@ class APIBuilder {
 		return responseArray ? TPath({name: "Array", params: [TPType(TAnonymous(retval))], pack: []}) : TAnonymous(retval);
 	}
 }
+#end
