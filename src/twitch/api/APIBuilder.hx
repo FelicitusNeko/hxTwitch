@@ -118,7 +118,7 @@ class APIBuilder {
 									});
 								case "response":
                   // This is pretty much 100% here for DeleteVideos, which not only doesn't return 204, but returns an array of strings without any structure
-									var rkind = (node.get("type") == "string") ? (macro:String) : buildAnonymous(root, node,
+									var rkind = (node.get("type") == "string") ? (macro:Array<String>) : buildAnonymous(root, node,
 										!falsy.contains(node.get("array")));
 									funcdef.ret = TPath({
 										name: "APIResponse",
@@ -133,7 +133,7 @@ class APIBuilder {
 							if (node.nodeValue != null) {
 								if (func.doc == null)
 									func.doc = "";
-								func.doc += node.nodeValue;
+								func.doc += node.nodeValue.trim();
 							}
 						default:
 					}
