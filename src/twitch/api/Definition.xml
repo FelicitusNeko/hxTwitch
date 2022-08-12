@@ -3104,10 +3104,10 @@
 
       At minimum, `from_id` or `to_id` must be provided for a query to be valid.
       <query>
-        <param name="from_user" optional="1">
+        <param name="from_id" optional="1">
           User ID. The request returns information about users who are being followed by the `from_id` user.
         </param>
-        <param name="to_user" optional="1">
+        <param name="to_id" optional="1">
           User ID. The request returns information about users who are following the `to_id` user.
         </param>
         <param name="first" type="int" optional="1">
