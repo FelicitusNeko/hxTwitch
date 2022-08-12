@@ -80,7 +80,7 @@ class Client {
 	public var _oauthKey(null, default):Null<String> = null;
 
 	/** Generates a random 16-character nonce. **/
-	private var _genNonce(get, never):String;
+	public var genNonce(get, never):String;
 
 	//------------- PubSub variables
 
@@ -129,7 +129,7 @@ class Client {
 		chatUnlisten = _irc_listen.remove;
 	}
 
-	function get__genNonce():String {
+	function get_genNonce():String {
 		var text = "";
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 		for (_ in 0...16)
@@ -151,7 +151,7 @@ class Client {
 			"client_id" => _clientId,
 			"redirect_url" => redirectURI,
 			"scope" => scopes.join("+"),
-			"state" => _genNonce
+			"state" => genNonce
 		])
 			queryStr.push('${k.urlEncode()}=${v.urlEncode()}');
 
@@ -339,7 +339,7 @@ class Client {
 		if (_ps_ws == null || _ps_ws.state == Closed)
 			connectPubSub();
 
-		var nonce = _genNonce;
+		var nonce = genNonce;
 		_ps_checkNonce.set(nonce, topic);
 		_ps_ws.send(Json.stringify({
 			type: "LISTEN",
