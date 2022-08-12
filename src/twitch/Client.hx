@@ -7,6 +7,8 @@ import haxe.io.BytesOutput;
 import haxe.Json;
 import haxe.Timer;
 import hx.ws.WebSocket;
+import twitch.chat.ChatMessageType;
+import twitch.chat.ChatParser;
 import twitch.chat.ChatSayType;
 import twitch.pubsub.PubSubIncomingMessage;
 
@@ -37,10 +39,13 @@ typedef AppAccessResponse = {
 enum AuthenticationType {
 	/** Will first use OAuth if available; otherwise, will use the app access token. This is the default behaviour. **/
 	OAuthFirst;
+
 	/** Will first use OAuth if available; otherwise, will use the app access token. **/
 	AppAccessFirst;
+
 	/** Forces the use of the OAuth token. **/
 	OAuth;
+
 	/** Forces the use of the app access token. **/
 	AppAccess;
 }
@@ -118,17 +123,14 @@ class Client {
 	/** The function to call when the client is disconnected from the chat server. **/
 	public var onChatDisconnect:Void->Void = null;
 
-	/** The list of IRC listeners. **/
-	private var _irc_listen:Map<String, String->Void> = [];
+	/** The function to call when the client receives a message from the chat server. **/
+	public var irc_onMessage:ChatMessageType->Void = null;
 
 	//------------- General functions
 
 	public function new(clientId:String, clientSecret:String) {
 		_clientId = clientId;
 		_clientSecret = clientSecret;
-
-		chatListen = _irc_listen.set;
-		chatUnlisten = _irc_listen.remove;
 	}
 
 	function get_genNonce():String {
@@ -427,27 +429,23 @@ class Client {
 				case StrMessage(content):
 					var messages = StringTools.rtrim(content).split("\r\n");
 					// trace("Received: " + messages);
-					var type = "";
+					// var type = "";
 					for (message in messages) {
-						// TODO: parse out the message before acting on it, even if it's a PING
-						var tokens = message.split(" ");
-						for (token in tokens)
-							if (!["@", ":"].contains(token.charAt(0))) {
-								type = token;
-								break;
-							}
-						if (type == "001" && onChatConnect != null)
-							onChatConnect();
-
-						if (type == "PING")
-							_ircSend(StringTools.replace(message, "PING", "PONG"));
-						else if (type == "RECONNECT") {
-							trace("IRC server has requested the client to reconnect; doing so automatically");
-							chatConnect(name);
-						} else if (_irc_listen.exists(type))
-							_irc_listen[type](message);
-						else if (_irc_listen.exists("*"))
-							_irc_listen["*"](message);
+						var parsedMsg = ChatParser.parse(message);
+						switch (parsedMsg) {
+							case Other(type, _):
+								if (type == "001") {
+									if (onChatConnect != null)
+										onChatConnect();
+								} else if (irc_onMessage != null) irc_onMessage(parsedMsg);
+							case Ping(msg):
+								_ircSend(msg.rawMessage.replace("PING", "PONG"));
+							case Reconnect(_):
+								trace("IRC server has requested the client to reconnect; doing so automatically");
+								chatConnect(name);
+							default:
+								if (irc_onMessage != null) irc_onMessage(parsedMsg);
+						}
 					}
 				case BytesMessage(content):
 					// this shouldn't happen, but just in case it does
@@ -471,20 +469,6 @@ class Client {
 		trace("Starting connection");
 		_irc_ws.open();
 	}
-
-	/**
-		Listens to a given IRC message type.
-		@param type The type of message to listen for. `"*"` can be used as a fallback catchall.
-		@param func The callback function for this type.
-	**/
-	public var chatListen(default, null):(String, String->Void) -> Void;
-
-	/**
-		Stops listening for a given IRC message type.
-		@param type The type of message to stop listening for.
-		@return Whether a listener was removed. If `false`, there was no listener for this message type.
-	**/
-	public var chatUnlisten(default, null):String->Bool;
 
 	/**
 		Join one or more channels.
