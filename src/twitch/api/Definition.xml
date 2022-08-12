@@ -2097,7 +2097,7 @@
     <endpoint name="GetVIPs" scope="channel:read:vips" path="channels/vips">
       Gets a list of the channel's VIPs.
       <query>
-        <param name="broadcaster_name">
+        <param name="broadcaster_id">
           The ID of the broadcaster whose list of VIPs you want to get.
         </param>
         <param name="user_id" optional="1">
