@@ -219,8 +219,8 @@ class ChatParser {
 		return retval;
 	}
 
-	static function parsePrivmsg(tags:Map<String, String>) {
-		var retval:PrivmsgTags = {};
+	static function parsePrivMsg(tags:Map<String, String>) {
+		var retval:PrivMsgTags = {};
 
 		for (k => v in tags) {
 			if (StringTools.startsWith(k, "reply") && retval.reply_parent == null)
@@ -571,7 +571,7 @@ class ChatParser {
 			case "NOTICE":
 				Notice(parseWithTags(tokens, parseNotice));
 			case "PRIVMSG":
-				Privmsg(parseWithTags(tokens, parsePrivmsg));
+				PrivMsg(parseWithTags(tokens, parsePrivMsg));
 			case "ROOMSTATE":
 				RoomState(parseWithTags(tokens, parseRoomState));
 			case "USERSTATE":
