@@ -493,9 +493,12 @@ class ChatParser {
 		for (i => token in tokens) {
 			switch (token.charAt(0)) {
 				case ":":
-					if (retval.origin == null)
+					if (retval.origin == null) {
 						retval.origin = token.substr(1);
-					else {
+						var excl = retval.origin.indexOf("!");
+						if (excl > 0)
+							retval.user = retval.origin.substr(0, excl);
+					} else {
 						retval.params = tokens.slice(i).join(" ").substr(1);
 						break;
 					}
@@ -527,9 +530,12 @@ class ChatParser {
 		for (i => token in tokens) {
 			switch (token.charAt(0)) {
 				case ":":
-					if (retval.origin == null)
+					if (retval.origin == null) {
 						retval.origin = token.substr(1);
-					else {
+						var excl = retval.origin.indexOf("!");
+						if (excl > 0)
+							retval.user = retval.origin.substr(0, excl);
+					} else {
 						retval.params = tokens.slice(i).join(" ").substr(1);
 						break;
 					}
@@ -555,58 +561,58 @@ class ChatParser {
 				break;
 			}
 
-		switch (type) {
+		return switch (type) {
 			case "CLEARCHAT":
-				return ClearChat(parseWithTags(tokens, parseClearChat));
+				ClearChat(parseWithTags(tokens, parseClearChat));
 			case "CLEARMSG":
-				return ClearMsg(parseWithTags(tokens, parseClearMsg));
+				ClearMsg(parseWithTags(tokens, parseClearMsg));
 			case "GLOBALUSERSTATE":
-				return GlobalUserState(parseWithTags(tokens, parseGlobalUserState));
+				GlobalUserState(parseWithTags(tokens, parseGlobalUserState));
 			case "NOTICE":
-				return Notice(parseWithTags(tokens, parseNotice));
+				Notice(parseWithTags(tokens, parseNotice));
 			case "PRIVMSG":
-				return Privmsg(parseWithTags(tokens, parsePrivmsg));
+				Privmsg(parseWithTags(tokens, parsePrivmsg));
 			case "ROOMSTATE":
-				return RoomState(parseWithTags(tokens, parseRoomState));
+				RoomState(parseWithTags(tokens, parseRoomState));
 			case "USERSTATE":
-				return UserState(parseWithTags(tokens, parseUserState));
+				UserState(parseWithTags(tokens, parseUserState));
 			case "WHISPER":
-				return Whisper(parseWithTags(tokens, parseWhisper));
+				Whisper(parseWithTags(tokens, parseWhisper));
 
 			case "USERNOTICE":
 				var msgid = ~/msg-id:(.*)[,\s]/;
 				if (msgid.match(message))
 					switch (msgid.matched(1)) {
 						case "bitsbadgetier":
-							return BitsTierUserNotice(parseWithTags(tokens, parseUserNoticeForBitsBadge));
+							BitsTierUserNotice(parseWithTags(tokens, parseUserNoticeForBitsBadge));
 						case "giftpaidupgrade" | "anongiftpaidupgrade":
-							return GiftUpgradeUserNotice(parseWithTags(tokens, parseUserNoticeForGiftPaidUpgrade));
+							GiftUpgradeUserNotice(parseWithTags(tokens, parseUserNoticeForGiftPaidUpgrade));
 						case "raid":
-							return RaidUserNotice(parseWithTags(tokens, parseUserNoticeForRaid));
+							RaidUserNotice(parseWithTags(tokens, parseUserNoticeForRaid));
 						case "ritual":
-							return RitualUserNotice(parseWithTags(tokens, parseUserNoticeForRitual));
+							RitualUserNotice(parseWithTags(tokens, parseUserNoticeForRitual));
 						case "sub" | "resub":
-							return SubUserNotice(parseWithTags(tokens, parseUserNoticeForSub));
+							SubUserNotice(parseWithTags(tokens, parseUserNoticeForSub));
 						case "subgift":
-							return SubGiftUserNotice(parseWithTags(tokens, parseUserNoticeForSubGift));
+							SubGiftUserNotice(parseWithTags(tokens, parseUserNoticeForSubGift));
 						default:
-							return GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
+							GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
 					}
 				else
-					return GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
+					GenericUserNotice(parseWithTags(tokens, parseUserNoticeForOther));
 
 			case "JOIN":
-				return Join(parseStandard(tokens));
+				Join(parseStandard(tokens));
 			case "PART":
-				return Part(parseStandard(tokens));
-			case "PING": // shouldn't happen, but in case it does
-				return Ping(parseStandard(tokens));
+				Part(parseStandard(tokens));
+			case "PING":
+				Ping(parseStandard(tokens));
 			case "HOSTTARGET":
-				return HostTarget(parseStandard(tokens));
-			case "RECONNECT": // shouldn't happen, but in case it does
-				return Reconnect(parseStandard(tokens));
+				HostTarget(parseStandard(tokens));
+			case "RECONNECT":
+				Reconnect(parseStandard(tokens));
 			default:
-				return Other(type, parseStandard(tokens));
+				Other(type, parseStandard(tokens));
 		}
 	}
 }

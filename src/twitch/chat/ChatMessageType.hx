@@ -8,6 +8,9 @@ typedef ParsedChatMessage = {
 	/** The origin of the message. **/
 	var ?origin:String;
 
+	/** The originating user of the message. Will generally be `null` if the message originates from the server. **/
+	var ?user:String;
+
 	/** The destination of the message. **/
 	var ?destination:String;
 
@@ -26,6 +29,9 @@ typedef ParsedChatMessageWith<T> = {
 
 	/** The origin of the message. **/
 	var ?origin:String;
+
+	/** The originating user of the message. Will generally be `null` if the message originates from the server. **/
+	var ?user:String;
 
 	/** The destination of the message. **/
 	var ?destination:String;
