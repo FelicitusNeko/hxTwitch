@@ -197,8 +197,13 @@ class Client {
 			throw new Exception("No authentication key provided");
 
 		if (query != null) {
-			for (k => v in query)
-				req.addParameter(k, Std.string(v));
+			for (k => v in query) {
+				if (Type.getClassName(v) == "Array")
+					for (vv in cast(v, Array<Dynamic>))
+						req.addParameter(k, Std.string(vv));
+				else
+					req.addParameter(k, Std.string(v));
+			}
 		}
 
 		if (data != null) {
