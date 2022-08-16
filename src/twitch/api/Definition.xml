@@ -1,0 +1,3839 @@
+<!--
+ Copyright (c) 2022 FelicitusNeko
+ 
+ This software is released under the MIT License.
+ https://opensource.org/licenses/MIT
+-->
+<TwitchAPI>
+  <collection name="ads">
+    <endpoint name="StartCommercial" scope="channel:edit:commercial" method="Post" path="channels/commercial" >
+      Starts a commercial on a specified channel.
+      <request>
+        <param name="broadcaster_id">
+          ID of the channel requesting a commercial
+          Minimum: 1 Maximum: 1
+        </param>
+        <param name="length" type="int">
+          Desired length of the commercial in seconds. 
+          Valid options are 30, 60, 90, 120, 150, 180.
+        </param>
+      </request>
+      <response>
+        <param name="length" type="int">
+          Length of the triggered commercial
+        </param>
+        <param name="message">
+          Provides contextual information on why the request failed
+        </param>
+        <param name="retry_after">
+          Seconds until the next commercial can be served on this channel
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="analytics">
+    <endpoint name="GetExtensionAnalytics" scope="analytics:read:extensions" path="analytics/extensions">
+      Gets a URL that Extension developers can use to download analytics reports (CSV files) for their Extensions. The URL is valid for 5 minutes.
+
+      If you specify a future date, the response will be “Report Not Found For Date Range.” If you leave both `started_at` and `ended_at` blank, the API returns the most recent date of data.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without `extension_id`. If an `extension_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. The report covers the entire ending date; e.g., if `2018-05-01T00:00:00Z` is specified, the report covers up to `2018-05-01T23:59:59Z`.
+
+          If this is provided, `started_at` also must be specified. If `ended_at` is later than the default end date, the default date is used. Default: 1-2 days before the request was issued (depending on report availability).
+        </param>
+        <param name="extension_id" optional="1">
+          Client ID value assigned to the extension when it is created. If this is specified, the returned URL points to an analytics report for just the specified extension. If this is not specified, the response includes multiple URLs (paginated), pointing to separate analytics reports for each of the authenticated user's Extensions.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. This must be on or after January 31, 2018.
+
+          If this is provided, `ended_at` also must be specified. If `started_at` is earlier than the default start date, the default date is used.  The file contains one row of data per day.
+        </param>
+        <param name="type" optional="1">
+          Type of analytics report that is returned. Currently, this field has no affect on the response as there is only one report type. If additional types were added, using this field would return only the URL for the specified report. Limit: 1. Valid values: `"overview_v2"`.
+        </param>
+      </query>
+      <response>
+        <param name="extension_id">
+          ID of the extension whose analytics data is being provided.
+        </param>
+        <param name="URL">
+          URL to the downloadable CSV file containing analytics data. Valid for 5 minutes.
+        </param>
+        <param name="type">
+          Type of report.
+        </param>
+        <param name="date_range" type="object">
+          <param name="started_at">
+            Report start date/time. Note this may differ from (be later than) the `started_at` value in the request; the response value is the date when data for the extension is available.
+          </param>
+          <param name="ended_at">
+            Report end date/time.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGameAnalytics" scope="analytics:read:games" path="analytics/games">
+      Gets a URL that game developers can use to download analytics reports (CSV files) for their games. The URL is valid for 5 minutes. For detail about analytics and the fields returned, see the Insights &amp; Analytics guide.
+
+      The response has a JSON payload with a `data` field containing an array of games information elements and can contain a `pagination` field containing information required to query for more streams.
+
+      If you specify a future date, the response will be “Report Not Found For Date Range.” If you leave both `started_at` and `ended_at` blank, the API returns the most recent date of data.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without `extension_id`. If an `extension_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. The report covers the entire ending date; e.g., if `2018-05-01T00:00:00Z` is specified, the report covers up to `2018-05-01T23:59:59Z`.
+
+          If this is provided, `started_at` also must be specified. If `ended_at` is later than the default end date, the default date is used. Default: 1-2 days before the request was issued (depending on report availability).
+        </param>
+        <param name="game_id" optional="1">
+          Game ID. If this is specified, the returned URL points to an analytics report for just the specified game. If this is not specified, the response includes multiple URLs (paginated), pointing to separate analytics reports for each of the authenticated user's games.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned reports, in RFC3339 format with the hours, minutes, and seconds zeroed out and the UTC timezone: `YYYY-MM-DDT00:00:00Z`. This must be on or after January 31, 2018.
+
+          If this is provided, `ended_at` also must be specified. If `started_at` is earlier than the default start date, the default date is used.  The file contains one row of data per day.
+        </param>
+        <param name="type" optional="1">
+          Type of analytics report that is returned. Currently, this field has no affect on the response as there is only one report type. If additional types were added, using this field would return only the URL for the specified report. Limit: 1. Valid values: `"overview_v2"`.
+        </param>
+      </query>
+      <response>
+        <param name="game_id">
+          ID of the game whose analytics data is being provided.
+        </param>
+        <param name="URL">
+          URL to the downloadable CSV file containing analytics data. Valid for 5 minutes.
+        </param>
+        <param name="type">
+          Type of report.
+        </param>
+        <param name="date_range" type="object">
+          <param name="started_at">
+            Report start date/time. Note this may differ from (be later than) the `started_at` value in the request; the response value is the date when data for the extension is available.
+          </param>
+          <param name="ended_at">
+            Report end date/time.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="bits">
+    <endpoint name="GetBitsLeaderboard" scope="bits:read" path="bits/leaderboard">
+      Gets a ranked list of Bits leaderboard information for an authorized broadcaster.
+      <query>
+        <param name="count" type="int" optional="1">
+          Number of results to be returned. Maximum: 100. Default: 10.
+        </param>
+        <param name="period" optional="1">
+          Time period over which data is aggregated (PST time zone). This parameter interacts with `started_at`. Valid values follow. Default: `"all"`.
+          - `"day"` – 00:00:00 on the day specified in `started_at`, through 00:00:00 on the following day.
+          - `"week"` – 00:00:00 on Monday of the week specified in `started_at`, through 00:00:00 on the following Monday.
+          - `"month"` – 00:00:00 on the first day of the month specified in `started_at`, through 00:00:00 on the first day of the following month.
+          - `"year"` – 00:00:00 on the first day of the year specified in `started_at`, through 00:00:00 on the first day of the following year.
+          - `"all"` – The lifetime of the broadcaster's channel. If this is specified (or used by default), `started_at` is ignored.
+        </param>
+        <param name="started_at" optional="1">
+          Timestamp for the period over which the returned data is aggregated. Must be in RFC 3339 format. If this is not provided, data is aggregated over the current period; e.g., the current day/week/month/year. This value is ignored if `period` is `"all"`.
+
+          Any `+` operator should be URL encoded.
+
+          Currently, the HH:MM:SS part of this value is used only to identify a given day in PST and otherwise ignored. For example, if the `started_at` value resolves to 5PM PST yesterday and `period` is `"day"`, data is returned for all of yesterday.
+        </param>
+        <param name="user_id" optional="1">
+          ID of the user whose results are returned; i.e., the person who paid for the Bits.
+
+          As long as `count` is greater than 1, the returned data includes additional users, with Bits amounts above and below the user specified by `user_id`.
+
+          If `user_id` is not provided, the endpoint returns the Bits leaderboard data across top users (subject to the value of `count`).
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          ID of the user (viewer) in the leaderboard entry.
+        </param>
+        <param name="user_login">
+          User login name.
+        </param>
+        <param name="user_name">
+          Display name corresponding to `user_id`.
+        </param>
+        <param name="rank" type="int">
+          Leaderboard rank of the user.
+        </param>
+        <param name="score" type="int">
+          Leaderboard score (number of Bits) of the user.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetCheermotes" path="bits/cheermotes">
+      Retrieves the list of available Cheermotes, animated emotes to which viewers can assign Bits, to cheer in chat. Cheermotes returned are available throughout Twitch, in all Bits-enabled channels.
+      <query>
+        <param name="broadcaster_id" optional="1">
+          ID for the broadcaster who might own specialized Cheermotes.
+        </param>
+      </query>
+      <response>
+        <param name="prefix">
+          The string used to Cheer that precedes the Bits amount.
+        </param>
+        <param name="tiers" type="object" optional="1">
+          An array of Cheermotes with their metadata.
+          <param name="min_bits" type="int">
+            Minimum number of bits needed to be used to hit the given tier of emote.
+          </param>
+          <param name="id">
+            ID of the emote tier. Possible tiers are: 1, 100, 500, 1000, 5000, 10k, or 100k.
+          </param>
+          <param name="color">
+            Hex code for the color associated with the bits of that tier. Grey, Purple, Teal, Blue, or Red color to match the base bit type.
+          </param>
+          <param name="images" type="object">
+            Structure containing both animated and static image sets, sorted by light and dark.
+            <param name="dark" type="object">
+              <param name="animated" type="map" />
+              <param name="static" type="map" />
+            </param>
+            <param name="light" type="object">
+              <param name="animated" type="map" />
+              <param name="static" type="map" />
+            </param>
+          </param>
+          <param name="can_cheer" type="bool">
+            Indicates whether or not emote information is accessible to users.
+          </param>
+          <param name="show_in_bits_card" type="bool">
+            Indicates whether or not we hide the emote from the bits card.
+          </param>
+        </param>
+        <param name="type">
+          Shows whether the emote is `global_first_party`, `global_third_party`, `channel_custom`, `display_only`, or `sponsored`.
+        </param>
+        <param name="order" type="int">
+          Order of the emotes as shown in the bits card, in ascending order.
+        </param>
+        <param name="last_updated">
+          The data when this Cheermote was last updated.
+        </param>
+        <param name="is_charitable" type="bool">
+          Indicates whether or not this emote provides a charity contribution match during charity campaigns.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetExtensionTransactions" path="extensions/transactions">
+      Gets the list of Extension transactions for a given Extension. This allows Extension back-end servers to fetch a list of transactions that have occurred for their Extension across all of Twitch. A transaction is a record of a user exchanging Bits for an in-Extension digital good.
+      <query>
+        <param name="extension_id">
+          ID of the Extension to list transactions for.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          Transaction IDs to look up. Can include multiple to fetch multiple transactions in a single request.
+
+          For example, `/helix/extensions/transactions?extension_id=1234&amp;id=1&amp;id=2&amp;id=3`
+
+          Maximum: 100.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to fetch the next page of data. This only applies to queries without ID. If an ID is specified, it supersedes the cursor.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 100. Default: 20.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Unique identifier of the Bits-in-Extensions transaction.
+        </param>
+        <param name="timestamp">
+          UTC timestamp when this transaction occurred.
+        </param>
+        <param name="broadcaster_id">
+          Twitch user ID of the channel the transaction occurred on.
+        </param>
+        <param name="broadcaster_login">
+          Login name of the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          Twitch display name of the broadcaster.
+        </param>
+        <param name="user_id">
+          Twitch user ID of the user who generated the transaction.
+        </param>
+        <param name="user_login">
+          Login name of the user who generated the transaction.
+        </param>
+        <param name="user_name">
+          Twitch display name of the user who generated the transaction.
+        </param>
+        <param name="product_type">
+          Enum of the product type. Currently only `BITS_IN_EXTENSION`.
+        </param>
+        <param name="product_data" type="object">
+          Represents the product acquired, as it looked at the time of the transaction.
+          <param name="domain">
+            Set to twitch.ext + your Extension ID.            
+          </param>
+          <param name="sku">
+            Unique identifier for the product across the Extension.
+          </param>
+          <param name="cost" type="object">
+            Represents the cost to acquire the product.
+            <param name="amount" type="int">
+              Number of Bits required to acquire the product.
+            </param>
+            <param name="type">
+              Identifies the contribution method. Currently only `bits`.
+            </param>
+          </param>
+          <param name="inDevelopment" type="bool">
+            Indicates if the product is in development.
+          </param>
+          <param name="displayName">
+            Display name of the product.
+          </param>
+          <param name="expiration">
+            Always empty since only unexpired products can be purchased.
+          </param>
+          <param name="broadcast" type="bool">
+            Indicates whether or not the data was sent over the Extension PubSub to all instances of the Extension.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="channels">
+    <endpoint name="GetChannelInformation" path="channels">
+      Gets channel information for users.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose channel you want to get. To specify more than one ID, include this parameter for each broadcaster you want to get. For example, `broadcaster_id=1234&amp;broadcaster_id=5678`. You may specify a maximum of 100 IDs.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          Twitch User ID of this channel owner.
+        </param>
+        <param name="broadcaster_login">
+          Broadcaster's user login name.
+        </param>
+        <param name="broadcaster_name">
+          Twitch user display name of this channel owner.
+        </param>
+        <param name="game_name">
+          Name of the game being played on the channel.
+        </param>
+        <param name="game_id">
+          Current game ID being played on the channel.
+        </param>
+        <param name="broadcaster_language">
+          Language of the channel. A language value is either the ISO 639-1 two-letter code for a supported stream language or “other”.
+        </param>
+        <param name="title">
+          Title of the stream.
+        </param>
+        <param name="delay" type="int">
+          Stream delay in seconds.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="ModifyChannelInformation" scope="channel:manage:broadcast" method="Patch" path="channels">
+      Modifies channel information for users.
+      <query>
+        <param name="broadcaster_id">
+          ID of the channel to be updated
+        </param>
+      </query>
+      <request>
+        <param name="game_id" optional="1">
+          The current game ID being played on the channel. Use “0” or “” (an empty string) to unset the game.
+        </param>
+        <param name="broadcaster_name" optional="1">
+          The language of the channel. A language value must be either the ISO 639-1 two-letter code for a supported stream language or “other”.
+        </param>
+        <param name="title" optional="1">
+          The title of the stream. Value must not be an empty string.
+        </param>
+        <param name="delay" type="int" optional="1">
+          Stream delay in seconds. Stream delay is a Twitch Partner feature; trying to set this value for other account types will return a 400 error.
+        </param>
+      </request>
+    </endpoint>
+    <endpoint name="GetChannelEditors" scope="channel:read:editors" path="channels/editors">
+      Gets a list of users who have editor permissions for a specific channel.
+      <query>
+        <param name="broadcaster_id">
+          Broadcaster's user ID associated with the channel.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of the editor.
+        </param>
+        <param name="user_name">
+          Display name of the editor.
+        </param>
+        <param name="created_at">
+          Date and time the editor was given editor permissions.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="channel_points">
+    <endpoint name="CreateCustomRewards" scope="channel:manage:redemptions" method="Post" path="channel_points/custom_rewards">
+      Creates a Custom Reward on a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+      </query>
+      <request>
+        <param name="title">
+          The title of the reward.
+        </param>
+        <param name="cost" type="int">
+          The cost of the reward.
+        </param>
+        <param name="prompt" optional="1">
+          The prompt for the viewer when redeeming the reward.
+        </param>
+        <param name="is_enabled" type="bool" optional="1">
+          Is the reward currently enabled, if false the reward won't show up to viewers. Default: true
+        </param>
+        <param name="background_color" optional="1">
+          Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+        </param>
+        <param name="is_user_input_required" type="bool" optional="1">
+          Does the user need to enter information when redeeming the reward. Default: false.
+        </param>
+        <param name="is_max_per_stream_enabled" type="bool" optional="1">
+          Whether a maximum per stream is enabled. Default: false.
+        </param>
+        <param name="max_per_stream" type="int" optional="1">
+          The maximum number per stream if enabled. Required when any value of `is_max_per_stream_enabled` is included.
+        </param>
+        <param name="is_max_per_user_per_stream_enabled" type="bool" optional="1">
+          Whether a maximum per user per stream is enabled. Default: false.
+        </param>
+        <param name="max_per_user_per_stream" type="int" optional="1">
+          The maximum number per user per stream if enabled. Required when any value of `is_max_per_user_per_stream_enabled` is included.
+        </param>
+        <param name="is_global_cooldown_enabled" type="bool" optional="1">
+          Whether a cooldown is enabled. Default: false.
+        </param>
+        <param name="global_cooldown_seconds" type="int" optional="1">
+          The cooldown in seconds if enabled. Required when any value of `is_global_cooldown_enabled` is included.
+        </param>
+        <param name="should_redemptions_skip_request_queue" type="bool" optional="1">
+          Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status. Default: false.
+        </param>
+      </request>
+      <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="DeleteCustomReward" scope="channel:manage:redemptions" method="Delete" path="channel_points/custom_rewards">
+      Deletes a Custom Reward on a channel.
+
+      The Custom Reward specified by `id` must have been created by the `client_id` attached to the OAuth token in order to be deleted. Any `UNFULFILLED` Custom Reward Redemptions of the deleted Custom Reward will be updated to the `FULFILLED` status.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="id">
+          ID of the Custom Reward to delete, must match a Custom Reward on `broadcaster_id`'s channel.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetCustomReward" scope="channel:read:redemptions" path="channel_points/custom_rewards">
+      Returns a list of Custom Reward objects for the Custom Rewards on a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="id" optional="1">
+          When used, this parameter filters the results and only returns reward objects for the Custom Rewards with matching ID. Maximum: 50
+        </param>
+        <param name="only_manageable_rewards" type="bool" optional="1">
+          When set to true, only returns custom rewards that the calling `client_id` can manage. Default: false.
+        </param>
+      </query>
+      <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="GetCustomRewardRedemption" scope="channel:read:redemptions" path="channel_points/custom_rewards/redemptions">
+      Returns Custom Reward Redemption objects for a Custom Reward on a channel that was created by the same `client_id`.
+
+      Developers only have access to get and update redemptions for the rewards created programmatically by the same `client_id`.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="reward_id">
+          When ID is not provided, this parameter returns paginated Custom Reward Redemption objects for redemptions of the Custom Reward with ID `reward_id`.
+        </param>
+        <param name="id" optional="1">
+          When used, this param filters the results and only returns Custom Reward Redemption objects for the redemptions with matching ID. Maximum: 50
+        </param>
+        <param name="status" optional="1">
+          When `id` is not provided, this param is required and filters the paginated Custom Reward Redemption objects for redemptions with the matching status. Can be one of UNFULFILLED, FULFILLED or CANCELED
+        </param>
+        <param name="sort" optional="1">
+          Sort order of redemptions returned when getting the paginated Custom Reward Redemption objects for a reward. One of: OLDEST, NEWEST. Default: OLDEST.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries without ID. If an ID is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the pagination response field of a prior query.
+        </param>
+        <param name="first" type="int" optional="1">
+          Number of results to be returned when getting the paginated Custom Reward Redemption objects for a reward. Limit: 50. Default: 20.
+        </param>
+      </query>
+      <response commonref="custom_redeem" />
+    </endpoint>
+    <endpoint name="UpdateCustomReward" scope="channel:manage:redemptions" method="Patch" path="channel_points/custom_rewards">
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="id">
+          ID of the Custom Reward to update. Must match a Custom Reward on the channel of the `broadcaster_id`.
+        </param>
+      </query>
+      <response commonref="custom_reward" />
+    </endpoint>
+    <endpoint name="UpdateRedemptionStatus" scope="channel:manage:redemptions" method="Patch" path="channel_points/custom_rewards/redemptions">
+      Updates the status of Custom Reward Redemption objects on a channel that are in the UNFULFILLED status.
+
+      The Custom Reward Redemption specified by id must be for a Custom Reward created by the client_id attached to the user OAuth token.
+      <query>
+        <param name="id">
+          ID of the Custom Reward Redemption to update, must match a Custom Reward Redemption on `broadcaster_id`'s channel. Maximum: 50.
+        </param>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="reward_id">
+          ID of the Custom Reward the redemptions to be updated are for.
+        </param>
+      </query>
+      <request>
+        <param name="status">
+          The new status to set redemptions to. Can be either FULFILLED or CANCELED. Updating to CANCELED will refund the user their Channel Points.
+        </param>
+      </request>
+      <response commonref="custom_redeem" />
+    </endpoint>
+  </collection>
+
+  <collection name="chat">
+    <endpoint name="GetChannelEmotes" path="chat/emotes">
+      Gets all emotes that the specified Twitch channel created. Broadcasters create these custom emotes for users who subscribe to or follow the channel, or cheer Bits in the channel's chat window. For information about the custom emotes, see [subscriber emotes](https://help.twitch.tv/s/article/subscriber-emote-guide), [Bits tier emotes](https://help.twitch.tv/s/article/custom-bit-badges-guide?language=bg#slots), and [follower emotes](https://blog.twitch.tv/en/2021/06/04/kicking-off-10-years-with-our-biggest-emote-update-ever/).
+  
+      **NOTE:** With the exception of custom follower emotes, users may use custom emotes in any Twitch chat.
+  
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <query>
+        <param name="broadcaster_id">
+          An ID that identifies the broadcaster to get the emotes from.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="tier">
+          The subscriber tier at which the emote is unlocked. This field contains the tier information only if `emote_type` is set to `subscriptions`, otherwise, it's an empty string.
+        </param>
+        <param name="emote_type">
+          The type of emote. The possible values are:
+          - bitstier — Indicates a custom Bits tier emote.
+          - follower — Indicates a custom follower emote.
+          - subscriptions — Indicates a custom subscriber emote.
+        </param>
+        <param name="emote_set_id">
+          An ID that identifies the emote set that the emote belongs to.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGlobalEmotes" path="chat/emotes/global">
+      Gets all [global emotes](https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes/). Global emotes are Twitch-created emoticons that users can use in any Twitch chat.
+
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetEmoteSets" path="chat/emotes/set">
+      Gets emotes for one or more specified emote sets.
+
+      An emote set groups emotes that have a similar context. For example, Twitch places all the subscriber emotes that a broadcaster uploads for their channel in the same emote set.
+
+      [Learn More](https://dev.twitch.tv/docs/irc/emotes)
+      <query>
+        <param name="emote_set_id">
+          An ID that identifies the emote set. Include the parameter for each emote set you want to get. For example, `emote_set_id=1234&amp;emote_set_id=5678`. You may specify a maximum of 25 IDs.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the emote.
+        </param>
+        <param name="name">
+          The name of the emote. This is the name that viewers type in the chat window to get the emote to appear.
+        </param>
+        <param name="images" type="object" commonref="url_sizes">
+          Contains the image URLs for the emote. These image URLs will always provide a static (i.e., non-animated) emote image with a light background. **NOTE:** The preference is for you to use the templated URL in the `template` field to fetch the image instead of using these URLs.
+        </param>
+        <param name="tier">
+          The subscriber tier at which the emote is unlocked. This field contains the tier information only if `emote_type` is set to `subscriptions`, otherwise, it's an empty string.
+        </param>
+        <param name="emote_type">
+          The type of emote. The possible values are:
+          - bitstier — Indicates a custom Bits tier emote.
+          - follower — Indicates a custom follower emote.
+          - subscriptions — Indicates a custom subscriber emote.
+        </param>
+        <param name="emote_set_id">
+          An ID that identifies the emote set that the emote belongs to.
+        </param>
+        <param name="format" array="1">
+          The formats that the emote is available in. For example, if the emote is available only as a static PNG, the array contains only `static`. But if it's available as a static PNG and an animated GIF, the array contains `static` and `animated`. The possible formats are:
+          - animated — Indicates an animated GIF is available for this emote.
+          - static — Indicates a static PNG file is available for this emote.
+        </param>
+        <param name="scale" array="1">
+          The sizes that the emote is available in. For example, if the emote is available in small and medium sizes, the array contains 1.0 and 2.0. Possible sizes are:
+          - 1.0 — A small version (28px x 28px) is available.
+          - 2.0 — A medium version (56px x 56px) is available.
+          - 3.0 — A large version (112px x 112px) is available.
+        </param>
+        <param name="theme_mode" array="1">
+          The background themes that the emote is available in. Possible themes are:
+          - dark
+          - light
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetChannelChatBadges" path="chat/badges">
+      Gets a list of custom chat badges that can be used in chat for the specified channel. This includes [subscriber badges](https://help.twitch.tv/s/article/subscriber-badge-guide) and [Bit badges](https://help.twitch.tv/s/article/custom-bit-badges-guide).
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster whose chat badges are being requested. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+        </param>
+      </query>
+      <response>
+        <param name="set_id">
+          ID for the chat badge set.
+        </param>
+        <param name="versions" type="object" commonref="url_sizes_and_id">
+          Contains chat badge objects for the set.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGlobalChatBadges" path="chat/badges/global">
+      Gets a list of chat badges that can be used in chat for any channel.
+      <response>
+        <param name="set_id">
+          ID for the chat badge set.
+        </param>
+        <param name="versions" type="object" commonref="url_sizes_and_id">
+          Contains chat badge objects for the set.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetChatSettings" path="chat/settings">
+      Gets the broadcaster's chat settings.
+
+      For an overview of chat settings, see [Chat Commands for Broadcasters and Moderators](https://help.twitch.tv/s/article/chat-commands#AllMods) and [Moderator Preferences](https://help.twitch.tv/s/article/setting-up-moderation-for-your-twitch-channel#modpreferences).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat settings you want to get.
+        </param>
+        <param name="moderator_id" optional="1">
+          Required only to access the `non_moderator_chat_delay` or `non_moderator_chat_delay_duration` settings.
+
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to get their own settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The ID of the broadcaster specified in the request.
+        </param>
+        <param name="emote_mode" type="bool">
+          A Boolean value that determines whether chat messages must contain only emotes. Is **true**, if only messages that are 100% emotes are allowed; otherwise, **false**.
+        </param>
+        <param name="follower_mode" type="bool">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Is **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room. See `follower_mode`.
+
+          Is **null** if follower_mode is false.
+        </param>
+        <param name="slow_mode" type="bool">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages. See `slow_mode`.
+
+          Is **null** if slow_mode is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Is **true**, if the broadcaster requires unique messages only; otherwise, **false**.
+        </param>
+        <param name="moderator_id" optional="1">
+          The moderator's ID. The response includes this field only if the request specifies a User access token that includes the **moderator:read:chat_settings** scope.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `non_moderator_chat_delay_duration` for the length of the delay.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat. See `non_moderator_chat_delay`.
+
+          Is **null** if non_moderator_chat_delay is **false**.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateChatSettings" scope="moderator:manage:chat_settings" method="Patch" path="chat/settings">
+      Updates the broadcaster's chat settings.
+
+      In the request body, specify only those fields that you want to update.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat settings you want to update. This ID must match the user ID associated with the user OAuth token.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="emote_mode" type="bool" optional="1">
+          A Boolean value that determines whether chat messages must contain only emotes.
+
+          Set to **true**, if only messages that are 100% emotes are allowed; otherwise, false. Default is **false**.
+        </param>
+        <param name="follower_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Set to **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**. Default is **true**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room (see `follower_mode`).
+
+          You may specify a value in the range: 0 (no restriction) through 129600 (3 months). The default is 0.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Set to true, if the broadcaster applies a delay; otherwise, false. Default is false.
+
+          See non_moderator_chat_delay_duration for the length of the delay.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat.
+
+          Possible values are:
+          - 2 — 2 second delay (recommended)
+          - 4 — 4 second delay
+          - 6 — 6 second delay
+
+          See `non_moderator_chat_delay`.
+        </param>
+        <param name="slow_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Set to **true**, if the broadcaster applies a wait period messages; otherwise, **false**. Default is **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages (see `slow_mode`).
+
+          You may specify a value in the range: 3 (3 second delay) through 120 (2 minute delay). The default is 30 seconds.
+        </param>
+        <param name="subscriber_mode" type="bool" optional="1">
+          A Boolean value that determines whether only users that subscribe to the broadcaster's channel can talk in the chat room.
+
+          Set to **true**, if the broadcaster restricts the chat room to subscribers only; otherwise, **false**. Default is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Set to **true**, if the broadcaster requires unique messages only; otherwise, **false**. Default is **false**.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The ID of the broadcaster specified in the request.
+        </param>
+        <param name="emote_mode" type="bool">
+          A Boolean value that determines whether chat messages must contain only emotes. Is **true**, if only messages that are 100% emotes are allowed; otherwise, **false**.
+        </param>
+        <param name="follower_mode" type="bool">
+          A Boolean value that determines whether the broadcaster restricts the chat room to followers only, based on how long they've followed.
+
+          Is **true**, if the broadcaster restricts the chat room to followers only; otherwise, **false**.
+
+          See `follower_mode_duration` for how long the followers must have followed the broadcaster to participate in the chat room.
+        </param>
+        <param name="follower_mode_duration" type="int" optional="1">
+          The length of time, in minutes, that the followers must have followed the broadcaster to participate in the chat room. See `follower_mode`.
+
+          Is **null** if follower_mode is false.
+        </param>
+        <param name="slow_mode" type="bool">
+          A Boolean value that determines whether the broadcaster limits how often users in the chat room are allowed to send messages.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `slow_mode_wait_time` for the delay.
+        </param>
+        <param name="slow_mode_wait_time" type="int" optional="1">
+          The amount of time, in seconds, that users need to wait between sending messages. See `slow_mode`.
+
+          Is **null** if slow_mode is **false**.
+        </param>
+        <param name="unique_chat_mode" type="bool">
+          A Boolean value that determines whether the broadcaster requires users to post only unique messages in the chat room.
+
+          Is **true**, if the broadcaster requires unique messages only; otherwise, **false**.
+        </param>
+        <param name="moderator_id" optional="1">
+          The moderator's ID. The response includes this field only if the request specifies a User access token that includes the **moderator:read:chat_settings** scope.
+        </param>
+        <param name="non_moderator_chat_delay" type="bool" optional="1">
+          A Boolean value that determines whether the broadcaster adds a short delay before chat messages appear in the chat room. This gives chat moderators and bots a chance to remove them before viewers can see the message.
+
+          Is **true**, if the broadcaster applies a delay; otherwise, **false**.
+
+          See `non_moderator_chat_delay_duration` for the length of the delay.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+        <param name="non_moderator_chat_delay_duration" type="int" optional="1">
+          The amount of time, in seconds, that messages are delayed from appearing in chat. See `non_moderator_chat_delay`.
+
+          Is **null** if non_moderator_chat_delay is **false**.
+
+          The response includes this field only if the request specifies a user access token that includes the **moderator:read:chat_settings** scope and the user in the *moderator_id* query parameter is one of the broadcaster's moderators.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="SendChatAnnouncement" scope="moderator:manage:announcements" method="Post" path="chat/announcements">
+      Sends an announcement to the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room to send the announcement to.
+        </param>
+        <param name="moderator_id">
+          The ID of a user who has permission to moderate the broadcaster's chat room. This ID must match the user ID in the OAuth token, which can be a moderator or the broadcaster.
+        </param>
+      </query>
+      <request>
+        <param name="message">
+          The announcement to make in the broadcaster's chat room. Announcements are limited to a maximum of 500 characters; announcements longer than 500 characters are truncated.
+        </param>
+        <param name="color">
+          The color used to highlight the announcement. Possible case-sensitive values are:
+          - blue
+          - green
+          - orange
+          - purple
+          - primary (default)
+
+          If `color` is set to primary or is not set, the channel's accent color is used to highlight the announcement (see **Profile Accent Color** under profile settings, **Channel and Videos**, and **Brand**).
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="GetUserChatColor" path="chat/color">
+      Gets the color used for the user's name in chat.
+      <query>
+        <param name="user_id">
+          The ID of the user whose color you want to get. To specify more than one user, include the user_id parameter for each user to get. For example, `&amp;user_id=1234&amp;user_id=5678`. The maximum number of IDs that you may specify is 100.
+
+          The response ignores duplicate IDs and IDs that aren't found.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          The ID of the user.
+        </param>
+        <param name="user_login">
+          The user's login name.
+        </param>
+        <param name="user_name">
+          The user's display name.
+        </param>
+        <param name="color">
+          The Hex color code that the user uses in chat for their name. If the user hasn't specified a color in their settings, the string is empty.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateUserChatColor" scope="user:manage:chat_color" method="Put" path="chat/color">
+      Updates the color used for the user's name in chat.
+      <query>
+        <param name="user_id">
+          The ID of the user whose chat color you want to update.
+        </param>
+        <param name="color">
+          The color to use for the user's name in chat. All users may specify one of the following named color values.
+          - blue
+          - blue_violet
+          - cadet_blue
+          - chocolate
+          - coral
+          - dodger_blue
+          - firebrick
+          - golden_rod
+          - green
+          - hot_pink
+          - orange_red
+          - red
+          - sea_green
+          - spring_green
+          - yellow_green
+
+          Turbo and Prime users may specify a named color or a Hex color code like #9146FF.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+  </collection>
+
+  <collection name="clips">
+    <endpoint name="CreateClip" scope="clips:edit" method="Post" path="clips">
+      Creates a clip programmatically. This returns both an ID and an edit URL for the new clip.
+
+      **Note:** The clips service returns a maximum of 1000 clips,
+
+      Clip creation takes time. We recommend that you query Get Clips, with the clip ID that is returned here. If Get Clips returns a valid clip, your clip creation was successful. If, after 15 seconds, you still have not gotten back a valid clip from Get Clips, assume that the clip was not created and retry Create Clip.
+
+      This endpoint has a global rate limit, across all callers. The limit may change over time, but the response includes informative headers:
+
+      ```
+      Ratelimit-Helixclipscreation-Limit: &lt;int value&gt;
+      Ratelimit-Helixclipscreation-Remaining: &lt;int value&gt;
+      ```
+      <query>
+        <param name="broadcaster_id">
+          ID of the stream from which the clip will be made.
+        </param>
+        <param name="has_delay" type="bool" optional="1">
+          If `false`, the clip is captured from the live stream when the API is called; otherwise, a delay is added before the clip is captured (to account for the brief delay between the broadcaster's stream and the viewer's experience of that stream). Default: `false`.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          ID of the clip that was created.
+        </param>
+        <param name="edit_url">
+          URL of the edit page for the clip.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetClips" path="clips">
+      Gets clip information by clip ID (one or more), broadcaster ID (one only), or game ID (one only).
+
+      **Note:** The clips service returns a maximum of 1000 clips.
+
+      The response has a JSON payload with a `data` field containing an array of clip information elements and a `pagination` field containing information required to query for more streams.
+
+      For a query to be valid, `id` (one or more), `broadcaster_id`, or `game_id` must be specified. You may specify only one of these parameters.
+      <query>
+        <param name="broadcaster_id" optional="1">
+          ID of the broadcaster for whom clips are returned. The number of clips returned is determined by the `first` query-string parameter (default: 20). Results are ordered by view count.
+        </param>
+        <param name="game_id" optional="1">
+          ID of the game for which clips are returned. The number of clips returned is determined by the `first` query-string parameter (default: 20). Results are ordered by view count.
+        </param>
+        <param name="id" optional="1">
+          ID of the clip being queried. Limit: 100.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries specifying `broadcaster_id` or `game_id`. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. This applies only to queries specifying `broadcaster_id` or `game_id`. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="ended_at" optional="1">
+          Ending date/time for returned clips, in RFC3339 format. (Note that the seconds value is ignored.) If this is specified, `started_at` also must be specified; otherwise, the time period is ignored.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="started_at" optional="1">
+          Starting date/time for returned clips, in RFC3339 format. (The seconds value is ignored.) If this is specified, `ended_at` also should be specified; otherwise, the `ended_at` date/time will be 1 week after the `started_at` value.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          ID of the clip being queried.
+        </param>
+        <param name="url">
+          URL where the clip can be viewed.
+        </param>
+        <param name="embed_url">
+          URL to embed the clip.
+        </param>
+        <param name="broadcaster_id">
+          User ID of the stream from which the clip was created.
+        </param>
+        <param name="broadcaster_name">
+          Display name corresponding to `broadcaster_id`.
+        </param>
+        <param name="creator_id">
+          ID of the user who created the clip.
+        </param>
+        <param name="creator_name">
+          Display name corresponding to `creator_id`.
+        </param>
+        <param name="video_id">
+          ID of the video from which the clip was created. This field contains an empty string if the video is not available.
+        </param>
+        <param name="game_id">
+          ID of the game assigned to the stream when the clip was created.
+        </param>
+        <param name="language">
+          Language of the stream from which the clip was created. A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="title">
+          Title of the clip.
+        </param>
+        <param name="view_count" type="int">
+          Number of times the clip has been viewed.
+        </param>
+        <param name="created_at">
+          Date when the clip was created.
+        </param>
+        <param name="thumbnail_url">
+          URL of the clip thumbnail.
+        </param>
+        <param name="duration" type="float">
+          Duration of the Clip in seconds (up to 0.1 precision).
+        </param>
+        <param name="vod_offset" type="int">
+          The zero-based offset, in seconds, to where the clip starts in the video (VOD). Is **null** if the video is not available or hasn't been created yet from the live stream. See `video_id`.
+
+          Note that there's a delay between when a clip is created during a broadcast and when the offset is set. During the delay period, `vod_offset` is **null**. The delay is indeterminant but is typically minutes long.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="entitlements">
+    <endpoint name="GetCodeStatus" path="entitlements/codes">
+      Gets the status of one or more provided codes. This API requires that the caller is an authenticated Twitch user. The API is throttled to one request per second per authenticated user. Codes are redeemable alphanumeric strings tied only to the bits product. This third-party API allows other parties to redeem codes on behalf of users. Third-party app and extension developers can use the API to provide rewards of bits from within their games.
+
+      We provide sets of codes to the third party as part of a contract agreement. The third-party program then calls this API to credit a Twitch user by submitting any specific codes. This means that a bits reward can be applied without users having to follow any manual steps.
+
+      All codes are single-use. Once a code has been redeemed, via either this API or the site page, then the code is no longer valid for any further use.
+      <query>
+        <param name="code">
+          The code to get the status of. Repeat this query parameter additional times to get the status of multiple codes.
+          Ex: `?code=code1&amp;code=code2`
+          1-20 code parameters are allowed.
+        </param>
+        <param name="user_id">
+          Represents a numeric Twitch user ID.
+          The user account which is going to receive the entitlement associated with the code.
+        </param>
+      </query>
+      <response>
+        <param name="code">
+          The code being checked.
+        </param>
+        <param name="status">
+          Indicates the success or error state of each key when redeeming.
+
+          **Code Statuses**
+          |Code|Description|
+          |-|-|
+          |`SUCCESSFULLY_REDEEMED`|Request successfully redeemed this code to the authenticated user's account. This status will only ever be encountered when calling the POST API to redeem a key.|
+          |`ALREADY_CLAIMED`|Code has already been claimed by a Twitch user.|
+          |`EXPIRED`|Code has expired and can no longer be claimed.|
+          |`USER_NOT_ELIGIBLE`|User is not eligible to redeem this code.|
+          |`NOT_FOUND`|Code is not valid and/or does not exist in our database.|
+          |`INACTIVE`|Code is not currently active.|
+          |`UNUSED`|Code has not been claimed.This status will only ever be encountered when calling the GET API to get a keys status.|
+          |`INCORRECT_FORMAT`|Code was not properly formatted.|
+          |`INTERNAL_ERROR`|Indicates some internal and/or unknown failure handling this code.|
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetDropsEntitlements" path="entitlements/drops">
+      Gets a list of entitlements for a given organization that have been granted to a game, user, or both.
+
+      Valid combinations of requests are:
+      |Authorization Provided|Request Fields Present|Data Returned|
+      |-|-|
+      |**App Access OAuth Token**|No fields|All entitlements with benefits owned by your organization.|
+      ||`user_id`|All entitlements for a user with benefits owned by your organization.|
+      ||`user_id`, `game_id`|All entitlements for the game granted to a user. Your organization must own the game.|
+      ||`game_id`|All entitlements for all users for a game. Your organization must own the game.|
+      |**User OAuth Token**|No fields|All entitlements owned by that user with benefits owned by your organization.|
+      ||`user_id`|Invalid.|
+      ||`user_id`, `game_id`|Invalid.|
+      ||`game_id`|All entitlements owned by a user for the specified game. Your organization must own the game.|
+      <query>
+        <param name="id" optional="1">
+          Unique identifier of the entitlement.
+        </param>
+        <param name="user_id" optional="1">
+          A Twitch user ID.
+        </param>
+        <param name="game_id" optional="1">
+          A Twitch game ID.
+        </param>
+        <param name="fulfillment_status" optional="1">
+          An optional fulfillment status used to filter entitlements. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to fetch the next page of data.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of entitlements to return.
+
+          Default: 20
+          Max: 1000
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Unique identifier of the entitlement.
+        </param>
+        <param name="benefit_id">
+          Identifier of the benefit.
+        </param>
+        <param name="timestamp">
+          UTC timestamp in ISO format when this entitlement was granted on Twitch.
+        </param>
+        <param name="user_id">
+          Twitch user ID of the user who was granted the entitlement.
+        </param>
+        <param name="game_id">
+          Twitch game ID of the game that was being played when this benefit was entitled.
+        </param>
+        <param name="fulfillment_status">
+          The fulfillment status of the entitlement as determined by the game developer. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+        <param name="updated_at">
+          UTC timestamp in ISO format for when this entitlement was last updated.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateDropsEntitlements" method="Patch" path="entitlements/drops">
+      Updates the fulfillment status on a set of Drops entitlements, specified by their entitlement IDs.
+
+      Valid combinations of requests are:
+      |Authorization Provided|Data Returned|
+      |-|-|
+      |App Access OAuth Token|All entitlements with benefits owned by your organization.|
+      |User OAuth Token|All entitlements owned by that user with benefits owned by your organization.|
+      <request>
+        <param name="entitlement_ids" array="1">
+          An array of unique identifiers of the entitlements to update.
+
+          Maximum: 100.
+        </param>
+        <param name="fulfillment_status">
+          A fulfillment status. Valid values are `"CLAIMED"` or `"FULFILLED"`.
+        </param>
+      </request>
+      <response>
+        <param name="status">
+          Status code applied to a set of entitlements for the update operation that can be used to indicate partial success. Valid values are:
+          |Code|Description|
+          |-|-|
+          |`SUCCESS`|Entitlement was successfully updated.|
+          |`INVALID_ID`|Invalid format for entitlement ID.|
+          |`NOT_FOUND`|Entitlement ID does not exist.|
+          |`UNAUTHORIZED`|Entitlement is not owned by the organization or the user when called with a user OAuth token.|
+          |`UPDATE_FAILED`|Indicates the entitlement update operation failed. Errors in the this state are expected to be be transient and should be retried later.|
+        </param>
+        <param name="id" array="1">
+          Array of unique identifiers of the entitlements for the specified status.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="RedeemCode" method="Post" path="entitlements/codes">
+      Redeems one or more redemption codes. Redeeming a code credits the user’s account with the entitlement associated with the code. For example, a Bits reward earned when playing a game.
+
+      Rate limit: You may send at most one request per second per user.
+      <query>
+        <param name="code">
+          The redemption code to redeem. To redeem multiple codes, include this parameter for each redemption code. For example, `code=1234&amp;code=5678`. You may specify a maximum of 20 codes.
+        </param>
+        <param name="user_id">
+          The ID of the user that owns the redemption code to redeem.
+        </param>
+      </query>
+      <response>
+        <param name="code">
+          The redemption code.
+        </param>
+        <param name="status">
+          The redemption code's status. Possible values are:
+          - ALREADY_CLAIMED — The code has already been claimed. All codes are single-use.
+          - EXPIRED — The code has expired and can no longer be claimed.
+          - INACTIVE — The code has not been activated.
+          - INCORRECT_FORMAT — The code is not properly formatted.
+          - INTERNAL_ERROR — An internal or unknown error occurred when accessing the code.
+          - NOT_FOUND — The code was not found.
+          - SUCCESSFULLY_REDEEMED — Successfully redeemed the code and credited the user's account with the entitlement.
+          - UNUSED — The code has not been claimed.
+          - USER_NOT_ELIGIBLE — The user is not eligible to redeem this code.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <!-- TODO: Extension collection (most of these endpoints require JWTs, which are not implemented in this client -->
+
+  <collection name="eventsub">
+    <endpoint name="CreateEventSubDescription" method="Post" path="eventsub/subscriptions">
+      Creates an EventSub subscription.
+
+      To create a subscription, you must use an app access token; however, if the subscription type requires user authorization, the user must have granted your app permissions to receive those events before you subscribe to them. For example, to subscribe to channel.subscribe events, the user must have granted your app permission which adds the `channel:read:subscriptions` scope to your app's client ID.
+      <request>
+        <param name="type">
+          The type of subscription to create. For a list of subscriptions you can create, see [Subscription Types](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#subscription-types). Set `type` to the value in the **Name** column of the Subscription Types table.
+        </param>
+        <param name="version">
+          The version of the subscription type used in this request. A subscription type could define one or more object definitions, so you need to specify which definition you’re using.
+        </param>
+        <param name="condition" type="map">
+          The parameter values that are specific to the specified subscription type.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details, such as the transport method and callback URL, that you want Twitch to use when sending you notifications.
+        </param>
+      </request>
+      <response>
+        <param name="id">
+          An ID that identifies the subscription.
+        </param>
+        <param name="status">
+          The status of the create subscription request. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL. To determine if the subscription moved from pending to another state, send a GET request and use the ID to find the subscription in the list.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type">
+          The type of subscription.
+        </param>
+        <param name="version">
+          The version of the subscription type.
+        </param>
+        <param name="condition" type="map">
+          The parameter values for the subscription type.
+        </param>
+        <param name="created_at" type="string">
+          The [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) timestamp indicating when the subscription was created.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details used to send you notifications.
+        </param>
+        <param name="cost" type="int">
+          The amount that the subscription counts against your limit. [Learn More](https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscription-limits)
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="DeleteEventSubSubscription" method="Delete" path="eventsub/subscriptions">
+      Deletes an EventSub subscription.
+      <query>
+        <param name="id">
+          The ID of the subscription to delete. This is the ID that Create Eventsub Subscription returns.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetEventSubSubscriptions" path="eventsub/subscriptions">
+      Gets a list of your EventSub subscriptions. The list is paginated and ordered by the oldest subscription first.
+      <query>
+        <param name="status" optional="1">
+          Filter subscriptions by its status. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type" optional="1">
+          Filter subscriptions by subscription type (e.g., `channel.update`). For a list of subscription types, see [Subscription Types](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#subscription-types).
+        </param>
+        <param name="user_id" optional="1">
+          Filter subscriptions by user ID. The response contains subscriptions where the user ID matches a user ID that you specified in the **Condition** object when you created the subscription.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The `pagination` object in the response contains the cursor's value.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that identifies the subscription.
+        </param>
+        <param name="status">
+          The status of the create subscription request. Possible values are:
+          - enabled — The subscription is enabled.
+          - webhook_callback_verification_pending — The subscription is pending verification of the specified callback URL. To determine if the subscription moved from pending to another state, send a GET request and use the ID to find the subscription in the list.
+          - webhook_callback_verification_failed — The specified callback URL failed verification.
+          - notification_failures_exceeded — The notification delivery failure rate was too high.
+          - authorization_revoked — The authorization was revoked for one or more users specified in the Condition object.
+          - user_removed — One of the users specified in the Condition object was removed.
+        </param>
+        <param name="type">
+          The type of subscription.
+        </param>
+        <param name="version">
+          The version of the subscription type.
+        </param>
+        <param name="condition" type="map">
+          The parameter values for the subscription type.
+        </param>
+        <param name="created_at" type="string">
+          The [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) timestamp indicating when the subscription was created.
+        </param>
+        <param name="transport" type="object" commonref="eventsub_transport">
+          The transport details used to send you notifications.
+        </param>
+        <param name="cost" type="int">
+          The amount that the subscription counts against your limit. [Learn More](https://dev.twitch.tv/docs/eventsub/manage-subscriptions/#subscription-limits)
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="games">
+    <endpoint name="GetTopGames" path="games/top">
+      Gets games sorted by number of current viewers on Twitch, most popular first.
+
+      The response has a JSON payload with a `data` field containing an array of games information elements and a `pagination` field containing information required to query for more streams.
+      <query>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Game ID.
+        </param>
+        <param name="name">
+          Game name.
+        </param>
+        <param name="box_art_url">
+          Template URL for a game's box art.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetGames" path="games">
+      Gets game information by game ID or name.
+
+      The response has a JSON payload with a `data` field containing an array of games elements.
+
+      For a query to be valid, `name` and/or `id` must be specified.
+      <query>
+        <param name="id" optional="1">
+          Game ID. At most 100 `id` values can be specified.
+        </param>
+        <param name="name" optional="1">
+          Game name. The name must be an exact match. For example, “Pokemon” will not return a list of Pokemon games; instead, query any specific Pokemon games in which you are interested. At most 100 `name` values can be specified.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Game ID.
+        </param>
+        <param name="name">
+          Game name.
+        </param>
+        <param name="box_art_url">
+          Template URL for a game's box art.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="goals">
+    <endpoint name="GetCreatorGoals" scope="channel:read:goals" path="goals">
+      Gets the broadcaster's list of active goals. Use this to get the current progress of each goal.
+
+      Alternatively, you can subscribe to receive notifications when a goal makes progress using the [channel.goal.progress](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelgoalprogress) subscription type. [Read more](https://dev.twitch.tv/docs/api/goals#requesting-event-notifications)
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that created the goals. The ID must match the user ID associated with the user OAuth token. In other words, only the broadcaster can see their goals.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that uniquely identifies this goal.
+        </param>
+        <param name="broadcaster_id">
+          An ID that uniquely identifies the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          The broadcaster's display name.
+        </param>
+        <param name="broadcaster_login">
+          The broadcaster's user handle.
+        </param>
+        <param name="type">
+          The type of goal. Possible values are:
+          - follower — The goal is to increase followers.
+          - subscription — The goal is to increase subscriptions. This type shows the net increase or decrease in tier points associated with the subscriptions.
+          - subscription_count — The goal is to increase subscriptions. This type shows the net increase or decrease in the number of subscriptions.
+          - new_subscription — The goal is to increase subscriptions. This type shows only the net increase in tier points associated with the subscriptions (it does not account for users that unsubscribed since the goal started).
+          - new_subscription_count — The goal is to increase subscriptions. This type shows only the net increase in the number of subscriptions (it does not account for users that unsubscribed since the goal started).
+        </param>
+        <param name="description">
+          A description of the goal, if specified. The description may contain a maximum of 40 characters.
+        </param>
+        <param name="current_amount" type="int">
+          The goal's current value.
+
+          The goal's type determines how this value is increased or decreased.
+          - If `type` is follower, this field is set to the broadcaster's current number of followers. This number increases with new followers and decreases when users unfollow the broadcaster.
+          - If `type` is subscription, this field is increased and decreased by the points value associated with the subscription tier. For example, if a tier-two subscription is worth 2 points, this field is increased or decreased by 2, not 1.
+          - If `type` is subscription_count, this field is increased by 1 for each new subscription and decreased by 1 for each user that unsubscribes.
+          - If `type` is new_subscription, this field is increased by the points value associated with the subscription tier. For example, if a tier-two subscription is worth 2 points, this field is increased by 2, not 1.
+          - If `type` is new_subscription_count, this field is increased by 1 for each new subscription.
+        </param>
+        <param name="target_amount" type="int">
+          The goal's target value. For example, if the broadcaster has 200 followers before creating the goal, and their goal is to double that number, this field is set to 400.
+        </param>
+        <param name="created_at">
+          The UTC timestamp in [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339) format, which indicates when the broadcaster created the goal.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="hypetrain">
+    <endpoint name="GetHypeTrainEvents" scope="channel:read:hype_train" path="hypetrain/events">
+      Gets the information of the most recent Hype Train of the given channel ID. When there is currently an active Hype Train, it returns information about that Hype Train. When there is currently no active Hype Train, it returns information about the most recent Hype Train. After 5 days, if no Hype Train has been active, the endpoint will return an empty response.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster. Must match the User ID in the Bearer token if User Token is used.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 1.
+        </param>
+        <param name="cursor" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without id. If an ID is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the pagination response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          The distinct ID of the event
+        </param>
+        <param name="event_type">
+          Displays hypetrain.{event_name}, currently only hypetrain.progression
+        </param>
+        <param name="event_timestamp">
+          RFC3339 formatted timestamp of event
+        </param>
+        <param name="version">
+          Returns the version of the endpoint
+        </param>
+        <param name="event_data" type="object">
+          Data pertaining to the event.
+          <param name="id">
+            The distinct ID of this Hype Train
+          </param>
+          <param name="broadcaster_id">
+            Channel ID of which Hype Train events the clients are interested in
+          </param>
+          <param name="started_at">
+            RFC3339 formatted timestamp of when this Hype Train started
+          </param>
+          <param name="expires_at">
+            RFC3339 formatted timestamp of the expiration time of this Hype Train
+          </param>
+          <param name="cooldown_end_time">
+            RFC3339 formatted timestamp of when another Hype Train can be started again
+          </param>
+          <param name="level" type="int">
+            The highest level (in the scale of 1-5) reached of the Hype Train
+          </param>
+          <param name="goal" type="int">
+            The goal value of the level above
+          </param>
+          <param name="total" type="int">
+            The total score so far towards completing the level goal above
+          </param>
+          <param name="top_contributions" type="object" array="1">
+            An array of top contribution objects, one object for each type. For example, one object would represent top contributor of BITS, by aggregate, and one would represent top contributor of SUBS by count.
+            <param name="user">
+              ID of the contributing user
+            </param>
+            <param name="type">
+              Identifies the contribution method, either `BITS` or `SUBS`
+            </param>
+            <param name="total" type="int">
+              Total aggregated amount of all contributions by the top contributor. If type is `BITS`, total represents aggregate amount of bits used.  If type is `SUBS`, aggregate total where 500, 1000, or 2500 represent tier 1, 2, or 3 subscriptions respectively.  For example, if top contributor has gifted a tier 1, 2, and 3 subscription, total would be 4000.
+            </param>
+          </param>
+          <param name="latest_contribution" type="object">
+            An object that represents the most recent contribution
+            <param name="user">
+              ID of the contributing user
+            </param>
+            <param name="type">
+              Identifies the contribution method, either `BITS` or `SUBS`
+            </param>
+            <param name="total" type="int">
+              Total aggregated amount of all contributions by the top contributor. If type is `BITS`, total represents aggregate amount of bits used.  If type is `SUBS`, aggregate total where 500, 1000, or 2500 represent tier 1, 2, or 3 subscriptions respectively.  For example, if top contributor has gifted a tier 1, 2, and 3 subscription, total would be 4000.
+            </param>
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="moderation">
+    <endpoint name="CheckAutoModStatus" scope="moderation:read" method="Post" path="moderation/enforcements/status">
+      Determines whether a string message meets the channel's AutoMod requirements.
+
+      AutoMod is a moderation tool that blocks inappropriate or harassing chat with powerful moderator control. AutoMod detects misspellings and evasive language automatically. AutoMod uses machine learning and natural language processing algorithms to hold risky messages from chat so they can be reviewed by a channel moderator before appearing to other viewers in the chat. Moderators can approve or deny any message caught by AutoMod.
+
+      For more information about AutoMod, see [How to Use AutoMod](https://help.twitch.tv/s/article/how-to-use-automod).
+
+      Rate Limits: Rates are limited per channel based on the account type rather than per access token.
+      |Account type|Limit per minute|Limit per hour|
+      |-|-|-|
+      |Normal|5|50|
+      |Affiliate|10|100|
+      |Partner|30|300|
+
+      The above limits are in addition to the standard [Twitch API rate limits](https://dev.twitch.tv/docs/api/guide#twitch-rate-limits). The rate limit headers in the response represent the Twitch rate limits and not the above limits.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the auth token.
+        </param>
+      </query>
+      <request>
+        <param name="msg_id">
+          Developer-generated identifier for mapping messages to results.
+        </param>
+        <param name="msg_text">
+          Message text.
+        </param>
+      </request>
+      <response>
+        <param name="msg_id">
+          The `msg_id` passed in the body of the `POST` message. Maps each message to its status.
+        </param>
+        <param name="is_permitted" type="bool">
+          Indicates if this message meets AutoMod requirements.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="ManageHeldAutoModMessages" scope="moderator:manage:automod" method="Post" path="moderation/automod/message">
+      Allow or deny a message that was held for review by AutoMod.
+
+      In order to retrieve messages held for review, use the `chat_moderator_actions` topic via [PubSub](https://dev.twitch.tv/docs/pubsub). For more information about AutoMod, see [How to Use AutoMod](https://help.twitch.tv/s/article/how-to-use-automod).
+      <request>
+        <param name="user_id">
+          The moderator who is approving or rejecting the held message. Must match the `user_id` in the user OAuth token.
+        </param>
+        <param name="msg_id">
+          ID of the message to be allowed or denied. These message IDs are retrieved from PubSub as mentioned above. Only one message ID can be provided.
+        </param>
+        <param name="action">
+          The action to take for the message. Must be `"ALLOW"` or `"DENY"`.
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="GetAutoModSettings" scope="moderator:read:automod_settings" path="moderation/automod/settings">
+      Gets the broadcaster's AutoMod settings, which are used to automatically block inappropriate or harassing messages from appearing in the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to get.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to get their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster's ID.
+        </param>
+        <param name="moderator_id">
+          The moderator's ID.
+        </param>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster. This field is null if the broadcaster has set one or more of the individual settings.
+        </param>
+        <param name="disability" type="int">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int">
+          The Automod level for sexual content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UpdateAutoModSettings" scope="moderator:manage:automod_settings" method="Put" path="moderation/automod/settings">
+      Updates the broadcaster's AutoMod settings, which are used to automatically block inappropriate or harassing messages from appearing in the broadcaster's chat room.
+
+      **Request Body**
+
+      Because PUT is an overwrite operation, you must include all the fields you want set after the operation completes. Typically, you'll send a GET request, update the fields you want to change, and pass that object in the PUT request.
+
+      You can set either `overall_level` or the individual settings like `aggression`, but not both.
+
+      Setting `overall_level` applies default values to the individual settings. However, setting `overall_level` to 4 does not mean that it applies 4 to all the individual settings. Instead, it applies a set of recommended defaults to the rest of the settings. For example, if you set `overall_level` to 2, Twitch provides some filtering on discrimination and sexual content, but more filtering on hostility (see the first example response).
+
+      If `overall_level` is currently set and you update swearing to 3, `overall_level` will be set to null and all settings other than `swearing` will be set to 0. The same is true if individual settings are set and you update `overall_level` to 3 — all the individual settings are updated to reflect the default level.
+
+      Note that if you set all the individual settings to values that match what `overall_level` would have set them to, Twitch changes AutoMod to use the default AutoMod level instead of using the individual settings.
+
+      Valid values for all levels are from 0 (no filtering) through 4 (most aggressive filtering). These levels affect how aggressively AutoMod holds back messages for moderators to review before they appear in chat or are denied (not shown).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to update.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster.
+        </param>
+        <param name="disability" type="int" optional="1">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int" optional="1">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int" optional="1">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int" optional="1">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int" optional="1">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int" optional="1">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int" optional="1">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int" optional="1">
+          The Automod level for sexual content.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster's ID.
+        </param>
+        <param name="moderator_id">
+          The moderator's ID.
+        </param>
+        <param name="overall_level" type="int" optional="1">
+          The default AutoMod level for the broadcaster. This field is null if the broadcaster has set one or more of the individual settings.
+        </param>
+        <param name="disability" type="int">
+          The Automod level for discrimination against disability.
+        </param>
+        <param name="aggression" type="int">
+          The Automod level for hostility involving aggression.
+        </param>
+        <param name="sexuality_sex_or_gender" type="int">
+          The AutoMod level for discrimination based on sexuality, sex, or gender.
+        </param>
+        <param name="misogyny" type="int">
+          The Automod level for discrimination against women.
+        </param>
+        <param name="bullying" type="int">
+          The Automod level for hostility involving name calling or insults.
+        </param>
+        <param name="swearing" type="int">
+          The Automod level for profanity.
+        </param>
+        <param name="race_ethnicity_or_religion" type="int">
+          The Automod level for racial discrimination.
+        </param>
+        <param name="sex_based_terms" type="int">
+          The Automod level for sexual content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetBannedUsers" scope="moderation:read" path="moderation/banned">
+      Returns all banned and timed-out users for a channel.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the OAuth token.
+        </param>
+        <param name="user_id" optional="1">
+          Filters the results and only returns a status object for users who are banned in the channel and have a matching user_id.
+
+          Multiple user IDs can be provided, e.g. `/moderation/banned/events?broadcaster_id=1&amp;user_id=2&amp;user_id=3`
+
+          Maximum: 100.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 100.
+          Default: 1.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset. combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of the banned user.
+        </param>
+        <param name="user_login">
+          Login of the banned user.
+        </param>
+        <param name="user_name">
+          Display name of the banned user.
+        </param>
+        <param name="expires_at">
+          The UTC date and time (in RFC3999 format) when the timeout expires, or an empty string if the user is permanently banned.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3999 format) when the ban was created.
+        </param>
+        <param name="reason">
+          The reason for the ban if provided by the moderator.
+        </param>
+        <param name="moderator_id">
+          User ID of the moderator who initiated the ban.
+        </param>
+        <param name="moderator_login">
+          Login of the moderator who initiated the ban.
+        </param>
+        <param name="moderator_name">
+          Display name of the moderator who initiated the ban.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="BanUser" scope="moderator:manage:banned_users" method="Post" path="moderation/bans">
+      Bans a user from participating in a broadcaster's chat room, or puts them in a timeout. For more information about banning or putting users in a timeout, see [Ban a User](https://help.twitch.tv/s/article/how-to-manage-harassment-in-chat#TheBanFeature) and [Timeout a User](https://help.twitch.tv/s/article/how-to-manage-harassment-in-chat#TheTimeoutFeature).
+
+      If the user is currently in a timeout, you can call this endpoint to change the duration of the timeout or ban them altogether. If the user is currently banned, you cannot call this method to put them in a timeout instead.
+
+      To remove a ban or end a timeout, see UnbanUser.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose chat room the user is being banned from.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="data" type="object">
+          The user to ban or put in a timeout.
+          <param name="duration" type="int" optional="1">
+            To ban a user indefinitely, don't include this field.
+
+            To put a user in a timeout, include this field and specify the timeout period, in seconds.
+            
+            The minimum timeout is 1 second and the maximum is 1,209,600 seconds (2 weeks).
+            
+            To end a user's timeout early, set this field to 1, or send an Unban user request.
+          </param>
+          <param name="reason">
+            The reason the user is being banned or put in a timeout. The text is user defined and limited to a maximum of 500 characters.
+          </param>
+          <param name="user_id">
+            The ID of the user to ban or put in a timeout.
+          </param>
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster whose chat room the user was banned from chatting in.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3999 format) when the ban was created.
+        </param>
+        <param name="end_time" optional="1">
+          The UTC date and time (in RFC3339 format) that the timeout will end. Is **null** if the user was banned instead of put in a timeout.
+        </param>
+        <param name="moderator_id">
+          The moderator that banned or put the user in the timeout.
+        </param>
+        <param name="user_id">
+          The user that was banned or was put in a timeout.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="UnbanUser" scope="moderator:manage:banned_users" method="Delete" path="moderation/bans">
+      Removes the ban or timeout that was placed on the specified user (see Ban user).
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose AutoMod settings you want to update.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove the ban or timeout from.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetBlockedTerms" scope="moderator:read:blocked_terms" path="moderation/blocked_terms">
+      Gets the broadcaster's list of non-private, blocked words or phrases. These are the terms that the broadcaster or moderator added manually, or that were denied by AutoMod.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose blocked terms you're getting.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The **Pagination** object in the response contains the cursor's value.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of blocked terms to return per page in the response. The minimum page size is 1 blocked term per page and the maximum is 100. The default is 20.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The moderator that blocked the word or phrase from being used in the broadcaster's chat room.
+        </param>
+        <param name="id">
+          An ID that uniquely identifies this blocked term.
+        </param>
+        <param name="text">
+          The blocked word or phrase.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3339 format) of when the term was blocked.
+        </param>
+        <param name="updated_at">
+          The UTC date and time (in RFC3339 format) of when the term was updated.
+
+          When the term is added, this timestamp is the same as created_at. The timestamp changes as AutoMod continues to deny the term.
+        </param>
+        <param name="expires_at" optional="1">
+          The UTC date and time (in RFC3339 format) of when the blocked term is set to expire. After the block expires, user's will be able to use the term in the broadcaster's chat room.
+
+          This field is **null** if the term was added manually or was permanently blocked by AutoMod.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddBlockedTerm" scope="moderator:manage:blocked_terms" method="Post" path="moderation/blocked_terms">
+      Adds a word or phrase to the broadcaster's list of blocked terms. These are the terms that broadcasters don't want used in their chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+  
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+      </query>
+      <request>
+        <param name="text">
+          The word or phrase to block from being used in the broadcaster's chat room.
+
+          The term must contain a minimum of 2 characters and may contain up to a maximum of 500 characters.
+
+          Terms can use a wildcard character (*). The wildcard character must appear at the beginning or end of a word, or set of characters. For example, *foo or foo*.
+        </param>
+      </request>
+      <response>
+        <param name="broadcaster_id">
+          The broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The moderator that blocked the word or phrase from being used in the broadcaster's chat room.
+        </param>
+        <param name="id">
+          An ID that uniquely identifies this blocked term.
+        </param>
+        <param name="text">
+          The blocked word or phrase.
+        </param>
+        <param name="created_at">
+          The UTC date and time (in RFC3339 format) of when the term was blocked.
+        </param>
+        <param name="updated_at">
+          The UTC date and time (in RFC3339 format) of when the term was updated.
+
+          When the term is added, this timestamp is the same as created_at. The timestamp changes as AutoMod continues to deny the term.
+        </param>
+        <param name="expires_at" optional="1">
+          The UTC date and time (in RFC3339 format) of when the blocked term is set to expire. After the block expires, user's will be able to use the term in the broadcaster's chat room.
+
+          This field is **null** if the term was added manually or was permanently blocked by AutoMod.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="RemoveBlockedTerm" scope="moderator:manage:blocked_terms" method="Delete" path="moderation/blocked_terms">
+      Removes the word or phrase that the broadcaster is blocking users from using in their chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the list of blocked terms.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID associated with the user OAuth token.
+  
+          If the broadcaster wants to update their own AutoMod settings (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="id">
+          The ID of the blocked term you want to delete.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="DeleteChatMessages" scope="moderator:manage:chat_messages" method="Delete" path="moderation/chat">
+      Removes a single chat message or all chat messages from the broadcaster's chat room.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room to remove messages from.
+        </param>
+        <param name="moderator_id">
+          The ID of a user that has permission to moderate the broadcaster's chat room. This ID must match the user ID in the OAuth token. If the broadcaster wants to remove messages themselves (instead of having the moderator do it), set this parameter to the broadcaster's ID, too.
+        </param>
+        <param name="message_id" optional="1">
+          The ID of the message to remove. The `id` tag in the `PRIVMSG` contains the message's ID (see [PRIVMSG Tags](https://dev.twitch.tv/docs/irc/tags#privmsg-tags). Restrictions:
+          - The message must have been created within the last 6 hours.
+          - The message must not belong to the broadcaster.
+
+          If not specified, the request removes all messages in the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetModerators" scope="moderation:read" path="moderation/moderators">
+      Returns all moderators in a channel. Note: This endpoint does not return the broadcaster in the response, as broadcasters are channel owners and have all permissions of moderators implicitly.
+      <query>
+        <param name="broadcaster_id">
+          Provided `broadcaster_id` must match the `user_id` in the auth token. Maximum: 1
+        </param>
+        <param name="user_id" optional="1">
+          Filters the results and only returns a status object for users who are moderators in this channel and have a matching user_id.
+
+          Format: Repeated Query Parameter, eg. `/moderation/moderators?broadcaster_id=1&amp;user_id=2&amp;user_id=3`
+
+          Maximum: 100
+        </param>
+        <param name="first">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of a moderator in the channel.
+        </param>
+        <param name="user_login">
+          Login of a moderator in the channel.
+        </param>
+        <param name="user_name">
+          Display name of a moderator in the channel.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddChannelModerator" scope="channel:manage:moderators" method="Post" path="moderation/moderators">
+      Adds a moderator to the broadcaster's chat room.
+
+      **Rate Limits**: The channel may add a maximum of 10 moderators within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room.
+        </param>
+        <param name="user_id">
+          The ID of the user to add as a moderator in the broadcaster's chat room.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="RemoveChannelModerator" scope="channel:manage:moderators" method="Delete" path="moderation/moderators">
+      Removes a moderator from the broadcaster's chat room.
+
+      *Rate Limits*: The channel may remove a maximum of 10 moderators within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that owns the chat room.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove as a moderator from the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+    <endpoint name="GetVIPs" scope="channel:read:vips" path="channels/vips">
+      Gets a list of the channel's VIPs.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster whose list of VIPs you want to get.
+        </param>
+        <param name="user_id" optional="1">
+          Filters the list for specific VIPs. To specify more than one user, include the user_id parameter for each user to get. For example, `&amp;user_id=1234&amp;user_id=5678`. The maximum number of IDs that you may specify is 100. Ignores those users in the list that aren't VIPs.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of items to return per page in the response. The minimum page size is 1 item per page and the maximum is 100. The default is 20.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The **Pagination** object in the response contains the cursor's value. [Read more](https://dev.twitch.tv/docs/api/guide#pagination).
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          An ID that uniquely identifies the VIP user.
+        </param>
+        <param name="user_name">
+          The user's display name.
+        </param>
+        <param name="user_login">
+          The user's login name.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="AddChannelVIP" scope="channel:manage:vips" method="Post" path="channels/vips">
+      Adds a VIP to the broadcaster's chat room.
+
+      **Rate Limits**: The channel may add a maximum of 10 VIPs within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's granting VIP status to the user.
+        </param>
+        <param name="user_id">
+          The ID of the user to add as a VIP in the broadcaster's chat room.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="RemoveChannelVIP" scope="channel:manage:vips" method="Delete" path="channel/vips">
+      Removes a VIP from the broadcaster's chat room.
+
+      **Rate Limits**: The channel may remove a maximum of 10 VIPs within a 10 seconds period.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's removing VIP status from the user.
+        </param>
+        <param name="user_id">
+          The ID of the user to remove as a VIP in the broadcaster's chat room.
+        </param>
+      </query>
+    </endpoint>
+  </collection>
+
+  <collection name="polls">
+    <endpoint name="GetPolls" scope="channel:read:polls" path="polls">
+      Get information about all polls or specific polls for a Twitch channel. Poll information is available for 90 days.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          ID of a poll. Filters results to one or more specific polls. Not providing one or more IDs will return the full list of polls for the authenticated channel.
+
+          Maximum: 100
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 20. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="poll" />
+    </endpoint>
+    <endpoint name="CreatePoll" scope="channel:manage:polls" method="Post" path="polls">
+      Create a poll for a specific Twitch channel.
+      <request>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="title">
+          Question displayed for the poll.
+
+          Maximum: 60 characters.
+        </param>
+        <param name="choices" type="object" array="1">
+          Array of the poll choices.
+
+          Minimum: 2 choices. Maximum: 5 choices.
+          <param name="title">
+            Text displayed for the choice.
+
+            Maximum: 25 characters.
+          </param>
+        </param>
+        <param name="duration" type="int">
+          Total duration for the poll (in seconds).
+
+          Minimum: 15. Maximum: 1800.
+        </param>
+        <param name="bits_voting_enabled" type="bool" optional="1">
+          Indicates if Bits can be used for voting.
+
+          Default: `false`
+        </param>
+        <param name="bits_per_vote" type="int" optional="1">
+          Number of Bits required to vote once with Bits.
+
+          Minimum: 0. Maximum: 10000.
+        </param>
+        <param name="channel_points_voting_enabled" type="bool" optional="1">
+          Indicates if Channel Points can be used for voting.
+
+          Default: `false`
+        </param>
+        <param name="channel_points_per_vote" type="int" optional="1">
+          Number of Channel Points required to vote once with Channel Points.
+
+          Minimum: 0. Maximum: 1000000.
+        </param>
+      </request>
+      <response commonref="poll" />
+    </endpoint>
+    <endpoint name="EndPoll" scope="channel:manage:polls" method="Patch" path="polls">
+      End a poll that is currently active.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running polls. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          ID of the poll.
+        </param>
+        <param name="status">
+          The poll status to be set. Valid values:
+          - `TERMINATED`: End the poll manually, but allow it to be viewed publicly.
+          - `ARCHIVED`: End the poll manually and do not allow it to be viewed publicly.
+        </param>
+      </query>
+      <response commonref="poll" />
+    </endpoint>
+  </collection>
+
+  <collection name="predictions">
+    <endpoint name="GetPredictions" scope="channel:read:predictions" path="predictions">
+      Get information about all Channel Points Predictions or specific Channel Points Predictions for a Twitch channel. Results are ordered by most recent, so it can be assumed that the currently active or locked Prediction will be the first item.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running Predictions. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          ID of a Prediction. Filters results to one or more specific Prediction. Not providing one or more IDs will return the full list of Predictions for the authenticated channel.
+
+          Maximum: 100
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return.
+
+          Maximum: 20. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="prediction" />
+    </endpoint>
+    <endpoint name="CreatePrediction" scope="channel:manage:predictions" method="Post" path="predictions">
+      Create a Channel Points Prediction for a specific Twitch channel.
+      <request>
+        <param name="broadcaster_id">
+          The broadcaster running Predictions. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="title">
+          Title for the Prediction
+
+          Maximum: 45 characters.
+        </param>
+        <param name="outcomes" type="object" array="1">
+          The list of possible outcomes for the Prediction. The minimum number of outcomes that you may specify is 2 and the maximum is 10.
+          <param name="title">
+            Text displayed for the outcome choice.
+
+            Maximum: 25 characters.
+          </param>
+        </param>
+        <param name="prediction_window" type="int">
+          Total duration for the Prediction (in seconds).
+
+          Minimum: 1. Maximum: 1800.
+        </param>
+      </request>
+      <response commonref="prediction" />
+    </endpoint>
+    <endpoint name="EndPrediction" scope="channel:manage:predictions" method="Patch" path="predictions">
+      End a poll that is currently active.
+      <query>
+        <param name="broadcaster_id">
+          The broadcaster running Prediction. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          ID of the poll.
+        </param>
+        <param name="status">
+          The Prediction status to be set. Valid values:
+          - `RESOLVED`: A winning outcome has been chosen and the Channel Points have been distributed to the users who predicted the correct outcome.
+          - `CANCELED`: The Prediction has been canceled and the Channel Points have been refunded to participants.
+          - `LOCKED`: The Prediction has been locked and viewers can no longer make predictions.
+        </param>
+        <param name="winning_outcome_id">
+          ID of the winning outcome for the Prediction. This parameter is required if `status` is being set to `RESOLVED`.
+        </param>
+      </query>
+      <response commonref="prediction" />
+    </endpoint>
+  </collection>
+
+  <collection name="raids">
+    <endpoint name="StartRaid" scope="channel:manage:raids" method="Post" path="raids">
+      Raid another channel by sending the broadcaster's viewers to the targeted channel.
+
+      When you call the API from a chat bot or extension, the Twitch UX pops up a window at the top of the chat room that identifies the number of viewers in the raid. The raid occurs when the broadcaster clicks **Raid Now** or after the 90 second countdown expires.
+
+      To cancel a pending raid, call Cancel a raid.
+
+      To determine whether the raid successfully occurred, you must subscribe to the [Channel Raid](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelraid) event. For more information, see [Get notified when a raid begins](https://dev.twitch.tv/docs/api/raids#get-notified-when-a-raid-begins).
+
+      **Rate Limit**: The limit is 10 requests within a 10-minute window.
+      <request>
+        <param name="from_broadcaster_id">
+          The ID of the broadcaster that's sending the raiding party.
+        </param>
+        <param name="to_broadcaster_id">
+          The ID of the broadcaster to raid.
+        </param>
+      </request>
+      <response>
+        <param name="created_at">
+          The UTC date and time, in RFC3339 format, when the raid request was created.
+        </param>
+        <param name="is_mature" type="bool">
+          A Boolean value that indicates whether the channel being raided contains mature content.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="CancelRaid" scope="channel:manage:raids" method="Delete" path="raids">
+      Cancel a pending raid.
+
+      You can cancel a raid at any point up until the broadcaster clicks **Raid Now** in the Twitch UX or the 90 seconds countdown expires.
+
+      **Rate Limit**: The limit is 10 requests within a 10-minute window.
+      <request>
+        <param id="broadcaster_id">
+          The ID of the broadcaster that sent the raiding party.
+        </param>
+      </request>
+    </endpoint>
+  </collection>
+
+  <collection name="schedule">
+    <endpoint name="GetChannelStreamSchedule" path="schedule">
+      Gets all scheduled broadcasts or specific scheduled broadcasts from a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule). Scheduled broadcasts are defined as “stream segments” in the API.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule.
+
+          Maximum: 1
+        </param>
+        <param name="id" optional="1">
+          The ID of the stream segment to return.
+
+          Maximum: 100.
+        </param>
+        <param name="start_time" optional="1">
+          A timestamp in RFC3339 format to start returning stream segments from. If not specified, the current date and time is used.
+        </param>
+        <param name="utc_offset" optional="1">
+          A timezone offset for the requester specified in minutes. This is recommended to ensure stream segments are returned for the correct week. For example, a timezone that is +4 hours from GMT would be “240.” If not specified, “0” is used for GMT.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of stream segments to return.
+
+          Maximum: 25. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="schedule" />
+    </endpoint>
+
+    <!-- TODO: GetChanneliCalendar -->
+
+    <endpoint name="UpdateChannelStreamSchedule" scope="channel:manage:schedule" method="Patch" path="schedule/settings">
+      Update the settings for a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule). This can be used for setting vacation details.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="is_vacation_enabled" type="bool" optional="1">
+          Indicates if Vacation Mode is enabled. Set to `true` to add a `vacation` or false to remove vacation from the channel streaming schedule.
+        </param>
+        <param name="vacation_start_time" optional="1">
+          Start time for vacation specified in RFC3339 format. Required if `is_vacation_enabled` is set to `true`.
+        </param>
+        <param name="vacation_end_time" optional="1">
+          End time for vacation specified in RFC3339 format. Required if `is_vacation_enabled` is set to `true`.
+        </param>
+        <param name="timezone" optional="1">
+          The timezone for when the vacation is being scheduled using the [IANA time zone database](https://www.iana.org/time-zones) format. Required if `is_vacation_enabled` is set to `true`.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="CreateChannelStreamScheduleSegment" scope="channel:manage:schedule" method="Post" path="schedule/segment">
+      Create a single scheduled broadcast or a recurring scheduled broadcast for a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule).
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+      </query>
+      <request>
+        <param name="start_time">
+          Start time for the scheduled broadcast specified in RFC3339 format.
+        </param>
+        <param name="timezone">
+          The timezone of the application creating the scheduled broadcast using the [IANA time zone database](https://www.iana.org/time-zones) format.
+        </param>
+        <param name="is_recurring" type="bool">
+          Indicates if the scheduled broadcast is recurring weekly.
+        </param>
+        <param name="duration" optional="1">
+          Duration of the scheduled broadcast in minutes from the `start_time`.
+
+          Default: 240.
+        </param>
+        <param name="category_id" optional="1">
+          Game/Category ID for the scheduled broadcast.
+        </param>
+        <param name="title" optional="1">
+          Title for the scheduled broadcast.
+
+          Maximum: 140 characters.
+        </param>
+      </request>
+      <response commonref="schedule" />
+    </endpoint>
+    <endpoint name="UpdateChannelStreamScheduleSegment" scope="channel:manage:schedule" method="Patch" path="schedule/segment">
+      Update a single scheduled broadcast or a recurring scheduled broadcast for a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule).
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          The ID of the streaming segment to update.
+
+          Maximum: 1
+        </param>
+      </query>
+      <request>
+        <param name="start_time" optional="1">
+          Start time for the scheduled broadcast specified in RFC3339 format.
+        </param>
+        <param name="timezone" optional="1">
+          The timezone of the application creating the scheduled broadcast using the [IANA time zone database](https://www.iana.org/time-zones) format.
+        </param>
+        <param name="is_recurring" type="bool" optional="1">
+          Indicates if the scheduled broadcast is recurring weekly.
+        </param>
+        <param name="duration" optional="1">
+          Duration of the scheduled broadcast in minutes from the `start_time`.
+
+          Default: 240.
+        </param>
+        <param name="category_id" optional="1">
+          Game/Category ID for the scheduled broadcast.
+        </param>
+        <param name="title" optional="1">
+          Title for the scheduled broadcast.
+
+          Maximum: 140 characters.
+        </param>
+      </request>
+      <response commonref="schedule" />
+    </endpoint>
+    <endpoint name="DeleteChannelStreamScheduleSegment" scope="channel:manage:schedule" method="Delete" path="schedule/segment">
+      Delete a single scheduled broadcast or a recurring scheduled broadcast for a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule).
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule. Provided `broadcaster_id` must match the `user_id` in the user OAuth token.
+
+          Maximum: 1
+        </param>
+        <param name="id">
+          The ID of the streaming segment to delete.
+        </param>
+      </query>
+    </endpoint>
+  </collection>
+
+  <collection name="search">
+    <endpoint name="SearchCategories" path="search/categories">
+      Returns a list of games or categories that match the query via name either entirely or partially.
+      <query>
+        <param name="query">
+          Search query
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return.
+          Maximum: 100.
+          Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          Game/category ID.
+        </param>
+        <param name="name=">
+          Game/category name.
+        </param>
+        <param name="box_art_url">
+          Template URL for the game's box art.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="SearchChannels" path="search/channels">
+      Returns a list of channels (users who have streamed within the past 6 months) that match the query via channel name or description either entirely or partially. Results include both live and offline channels. Online channels will have additional metadata (e.g. `started_at`, `tag_ids`).
+      <query>
+        <param name="query">
+          Search query
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return.
+          Maximum: 100.
+          Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="live_only" type="bool" optional="1">
+          Filter results for live streams only.
+          Default: false
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_language">
+          Channel language
+          (Broadcaster Language field from the Channels service). A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="broadcaster_login">
+          Broadcaster's user login name.
+        </param>
+        <param name="display_name">
+          Display name of the broadcaster.
+        </param>
+        <param name="game_id">
+          ID of the game being played on the stream.
+        </param>
+        <param name="game_name">
+          Name of the game being played on the stream.
+        </param>
+        <param name="id">
+          Channel ID.
+        </param>
+        <param name="is_live" type="bool">
+          Indicates if the channel is currenty live.
+        </param>
+        <param name="tag_ids" array="1">
+          Tag IDs that apply to the stream. This array only contains strings when a channel is live. For all possibilities, see [List of All Tags](https://www.twitch.tv/directory/all/tags). Category Tags are not returned.
+        </param>
+        <param name="thumbnail_url">
+          Thumbnail URL of the stream. All image URLs have variable width and height. You can replace {width} and {height} with any values to get that size image.
+        </param>
+        <param name="title">
+          Stream title.
+        </param>
+        <param name="started_at">
+          UTC timestamp. Returns an empty string if the channel is not live.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="soundtrack" beta="1">
+    <endpoint name="GetSoundtrackCurrentTrack" path="soundtrack/current_track">
+      Gets the Soundtrack track that the broadcaster is playing.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's playing a Soundtrack track.
+        </param>
+      </query>
+      <response>
+        <param name="track" type="object" commonref="soundtrack_track">
+          The track that's currently playing.
+        </param>
+        <param name="source" type="object">
+          The source of the track that's currently playing. For example, a playlist or station.
+          <param name="content_type">
+            The type of content that `id` maps to. Possible values are:
+            - PLAYLIST
+            - STATION
+          </param>
+          <param name="id">
+            The playlist's or station's ASIN (Amazon Standard Identification Number).
+          </param>
+          <param name="image_url">
+            A URL to the playlist's or station's image art.
+          </param>
+          <param name="soundtrack_url">
+            A URL to the playlist on Soundtrack. The string is empty if `content-type` is STATION.
+          </param>
+          <param name="spotify_url">
+            A URL to the playlist on Spotify. The string is empty if `content-type` is STATION.
+          </param>
+          <param name="title">
+            The playlist's or station's title.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetSoundtrackPlaylist" path="soundtrack/playlist">
+      Gets the tracks of a Soundtrack playlist.
+      <query>
+        <param name="id">
+          The ID of the Soundtrack playlist to get.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of tracks to return for this playlist in the response. The minimum number of tracks is 1 and the maximum is 100. The default is 20.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of tracks for this playlist. The **Pagination** object in the response contains the cursor's value.
+        </param>
+      </query>
+      <response commonref="soundtrack_track" />
+    </endpoint>
+    <endpoint name="GetSoundtrackPlaylists" path="soundtrack/playlists">
+      Gets a list of Soundtrack playlists.
+
+      The list contains information about the playlists, such as their titles and descriptions. To get a playlist's tracks, call GetSoundtrackPlaylist and specify the playlist's ID.
+      <query>
+        <param name="id" optional="1">
+          The ID of the Soundtrack playlist to get. Specify an ID only if you want to get a single playlist instead of all playlists.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          The playlist's ASIN (Amazon Standard Identification Number).
+        </param>
+        <param name="title">
+          The playlist's title.
+        </param>
+        <param name="description">
+          A short description about the music that the playlist includes.
+        </param>
+        <param name="image_url">
+          A URL to the playlist’s image art. Is empty if the playlist doesn't include art.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="streams">
+    <endpoint name="GetStreamKey" scope="channel:read:stream_key" path="streams/key">
+      Gets the channel stream key for a user.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster
+        </param>
+      </query>
+      <response>
+        <param name="stream_key">
+          Stream key for the channel
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetStreams" path="streams">
+      Gets information about active streams. Streams are returned sorted by number of current viewers, in descending order. Across multiple pages of results, there may be duplicate or missing streams, as viewers join and leave streams.
+
+      The response has a JSON payload with a `data` field containing an array of stream information elements and a `pagination` field containing information required to query for more streams.
+      <query>
+        <param name="user_id" optional="1">
+          Returns streams broadcast by one or more specified user IDs. You can specify up to 100 IDs.
+        </param>
+        <param name="user_login" optional="1">
+          Returns streams broadcast by one or more specified user login names. You can specify up to 100 names.
+        </param>
+        <param name="game_id" optional="1">
+          Returns streams broadcasting a specified game ID. You can specify up to 100 IDs.
+        </param>
+        <param name="language" optional="1">
+          Stream language. You can specify up to 100 languages. A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="stream" />
+    </endpoint>
+    <endpoint name="GetFollowedStreams" scope="user:read:follows" path="streams/followed">
+      Gets information about active streams belonging to channels that the authenticated user follows. Streams are returned sorted by number of current viewers, in descending order. Across multiple pages of results, there may be duplicate or missing streams, as viewers join and leave streams.
+      <query>
+        <param name="user_id">
+          Results will only include active streams from the channels that this Twitch user follows. `user_id` must match the User ID in the bearer token.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response commonref="stream" />
+    </endpoint>
+    <endpoint name="CreateStreamMarker" scope="channel:manage:broadcast" method="Post" path="streams/markers">
+      Creates a marker in the stream of a user specified by user ID. A marker is an arbitrary point in a stream that the broadcaster wants to mark; e.g., to easily return to later. The marker is created at the current timestamp in the live broadcast when the request is processed. Markers can be created by the stream owner or editors. The user creating the marker is identified by a Bearer token.
+
+      Markers cannot be created in some cases (an error will occur):
+      - If the specified user's stream is not live.
+      - If VOD (past broadcast) storage is not enabled for the stream.
+      - For premieres (live, first-viewing events that combine uploaded videos with live chat).
+      - For reruns (subsequent (not live) streaming of any past broadcast, including past premieres).
+      <request>
+        <param name="user_id">
+          ID of the broadcaster in whose live stream the marker is created.
+        </param>
+        <param name="description" optional="1">
+          Description of or comments on the marker. Max length is 140 characters.
+        </param>
+      </request>
+      <response>
+        <param name="id">
+          Unique ID of the marker.
+        </param>
+        <param name="description">
+          Description of the marker.
+        </param>
+        <param name="position_seconds" type="int">
+          Relative offset (in seconds) of the marker, from the beginning of the stream.
+        </param>
+        <param name="created_at">
+          RFC3339 timestamp of the marker.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetStreamMarkers" scope="user:read:broadcast" path="streams/markers">
+      Gets a list of markers for either a specified user's most recent stream or a specified VOD/video (stream), ordered by recency. A marker is an arbitrary point in a stream that the broadcaster wants to mark; *e.g.*, to easily return to later. The only markers returned are those created by the user identified by the Bearer token.
+
+      Only one of `user_id` and `video_id` must be specified.
+      <query>
+        <param name="user_id" optional="1">
+          ID of the broadcaster from whose stream markers are returned.
+        </param>
+        <param name="video_id" optional="1">
+          ID of the VOD/video whose stream markers are returned.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          ID of the user whose markers are returned.
+        </param>
+        <param name="user_login">
+          Login corresponding to `user_id`.
+        </param>
+        <param name="user_name">
+          Display name corresponding to `user_id`.
+        </param>
+        <param name="videos" type="object" array="1">
+          <param name="video_id">
+            ID of the stream (VOD/video) that was marked.
+          </param>
+          <param name="markers" type="object" array="1">
+            <param name="id">
+              Unique ID of the marker.
+            </param>
+            <param name="description">
+              Description of the marker.
+            </param>
+            <param name="position_seconds" type="int">
+              Relative offset (in seconds) of the marker, from the beginning of the stream.
+            </param>
+            <param name="created_at">
+              RFC3339 timestamp of the marker.
+            </param>
+            <param name="URL">
+              A link to the stream with a query parameter that is a timestamp of the marker's location.
+            </param>
+          </param>
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="subscriptions">
+    <endpoint name="GetBroadcasterSubscriptions" scope="channel:read:subscriptions" path="subscriptions">
+      Gets a list of users that subscribe to the specified broadcaster.
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster. Must match the User ID in the Bearer token.
+        </param>
+        <param name="user_id" optional="1">
+          Filters the list to include only the specified subscribers. To specify more than one subscriber, include this parameter for each subscriber. For example, &amp;user_id=1234&amp;user_id=5678. You may specify a maximum of 100 subscribers.
+        </param>
+        <param name="first" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results in a multi-page response. This applies only to queries without `user_id`. If a `user_id` is specified, it supersedes any cursor/offset combinations. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          User ID of the broadcaster.
+        </param>
+        <param name="broadcaster_login">
+          Login of the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          Display name of the broadcaster.
+        </param>
+        <param name="gifter_id">
+          If the subscription was gifted, this is the user ID of the gifter. Empty string otherwise.
+        </param>
+        <param name="gifter_login">
+          If the subscription was gifted, this is the login of the gifter. Empty string otherwise.
+        </param>
+        <param name="gifter_name">
+          If the subscription was gifted, this is the display name of the gifter. Empty string otherwise.
+        </param>
+        <param name="is_gift" type="bool">
+          Is true if the subscription is a gift subscription.
+        </param>
+        <param name="plan_name">
+          Name of the subscription.
+        </param>
+        <param name="tier">
+          Type of subscription (Tier 1, Tier 2, Tier 3).
+          1000 = Tier 1, 2000 = Tier 2, 3000 = Tier 3 subscriptions.
+        </param>
+        <param name="user_id">
+          ID of the subscribed user.
+        </param>
+        <param name="user_login">
+          Login of the subscribed user.
+        </param>
+        <param name="user_name">
+          Display name of the subscribed user.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="CheckUserSubscription" scope="user:read:subscriptions" path="subscriptions/user">
+      Checks if a specific user (`user_id`) is subscribed to a specific channel (`broadcaster_id`).
+      <query>
+        <param name="broadcaster_id">
+          User ID of an Affiliate or Partner broadcaster.
+        </param>
+        <param name="user_id">
+          User ID of a Twitch viewer.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          User ID of the broadcaster.
+        </param>
+        <param name="broadcaster_login">
+          Login of the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          Display name of the broadcaster.
+        </param>
+        <param name="is_gift" type="bool">
+          Is true if the subscription is a gift subscription.
+        </param>
+        <param name="gifter_login" optional="1">
+          Login of the gifter (if `is_gift` is `true`).
+        </param>
+        <param name="gifter_name" optional="1">
+          Display name of the gifter (if `is_gift` is `true`).
+        </param>
+        <param name="tier">
+          Subscription tier. 1000 is tier 1, 2000 is tier 2, and 3000 is tier 3.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="tags">
+    <endpoint name="GetAllStreamTags" path="tags/streams">
+      Gets the list of all stream tags that Twitch defines. You can also filter the list by one or more tag IDs.
+
+      For an online list of the possible tags, see [List of All Tags](https://www.twitch.tv/directory/all/tags).
+      <query>
+        <param name="tag_id" optional="1">
+          An ID that identifies a specific tag to return. Include the query parameter for each tag you want returned. For example, `tag_id=123&amp;tag_id=456`. You may specify a maximum of 100 IDs.
+        </param>
+        <param name="first" type="int" optional="1">
+          The maximum number of tags to return per page.
+
+          Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          The cursor used to get the next page of results. The `pagination` object in the response contains the cursor's value.
+
+          The `after` and `tag_id` query parameters are mutually exclusive.
+        </param>
+      </query>
+      <response commonref="tag" />
+    </endpoint>
+    <endpoint name="GetStreamTags" path="tags/streams">
+      Gets the list of stream tags that are set on the specified channel.
+      <query>
+        <param name="broadcaster_id">
+          The user ID of the channel to get the tags from.
+        </param>
+      </query>
+      <response commonref="tag" />
+    </endpoint>
+    <endpoint name="ReplaceStreamTags" scope="channel:manage:broadcast" method="Patch" path="streams/tags">
+      Applies one or more tags to the specified channel, overwriting any existing tags. If the request does not specify tags, all existing tags are removed from the channel.
+
+      **NOTE:** You may not specify automatic tags; the call will fail if you specify automatic tags. Automatic tags are tags that Twitch applies to the channel. For a list of automatic tags, see [List of All Tags](https://www.twitch.tv/directory/all/tags). To get the list programmatically, see GetAllStreamTags.
+
+      Tags expire 72 hours after they are applied, unless the channel is live within that time period. If the channel is live within the 72-hour window, the 72-hour clock restarts when the channel goes offline. The expiration period is subject to change.
+      <query>
+        <param name="broadcaster_id">
+          The user ID of the channel to apply the tags to.
+        </param>
+      </query>
+      <request>
+        <param name="tag_ids" array="1">
+          A list of IDs that identify the tags to apply to the channel. You may specify a maximum of five tags.
+
+          To remove all tags from the channel, set `tag_ids` to an empty array.
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+  </collection>
+
+  <collection name="teams">
+    <endpoint name="GetChannelTeams" path="teams/channel">
+      Retrieves a list of Twitch Teams of which the specified channel/broadcaster is a member.
+      <query>
+        <param name="broadcaster_id">
+          User ID for a Twitch user.
+        </param>
+      </query>
+      <response>
+        <param name="broadcaster_id">
+          User ID of the broadcaster.
+        </param>
+        <param name="broadcaster_login">
+          Login of the broadcaster.
+        </param>
+        <param name="broadcaster_name">
+          Display name of the broadcaster.
+        </param>
+        <param name="background_image_url" optional="1">
+          URL for the Team background image.
+        </param>
+        <param name="banner" optional="1">
+          URL for the Team banner.
+        </param>
+        <param name="created_at">
+          Date and time the Team was created.
+        </param>
+        <param name="updated_at">
+          Date and time the Team was last updated.
+        </param>
+        <param name="info">
+          Team description.
+        </param>
+        <param name="thumbnail_url">
+          Image URL for the Team logo.
+        </param>
+        <param name="team_name">
+          Team name.
+        </param>
+        <param name="team_display_name">
+          Team display name.
+        </param>
+        <param name="id">
+          Team ID.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetTeams" path="teams">
+      Gets information for a specific Twitch Team.
+
+      One of the two optional query parameters must be specified to return Team information.
+      <query>
+        <param name="name" optional="1">
+          Team name.
+        </param>
+        <param name="id" optional="1">
+          Team ID.
+        </param>
+      </query>
+      <response>
+        <param name="users" type="object" array="1">
+          Users in the specified Team.
+          <param name="user_id">
+            User ID of a Team member.
+          </param>
+          <param name="user_login">
+            Login of a Team member.
+          </param>
+          <param name="user_name">
+            Display name of a Team member.
+          </param>
+        </param>
+        <param name="background_image_url" optional="1">
+          URL for the Team background image.
+        </param>
+        <param name="banner" optional="1">
+          URL for the Team banner.
+        </param>
+        <param name="created_at">
+          Date and time the Team was created.
+        </param>
+        <param name="updated_at">
+          Date and time the Team was last updated.
+        </param>
+        <param name="info">
+          Team description.
+        </param>
+        <param name="thumbnail_url">
+          Image URL for the Team logo.
+        </param>
+        <param name="team_name">
+          Team name.
+        </param>
+        <param name="team_display_name">
+          Team display name.
+        </param>
+        <param name="id">
+          Team ID.
+        </param>
+      </response>
+    </endpoint>
+  </collection>
+
+  <collection name="users">
+    <endpoint name="GetUsers" path="users">
+      Gets information about one or more specified Twitch users. Users are identified by optional user IDs and/or login name. If neither a user ID nor a login name is specified, the user is looked up by Bearer token.
+
+      The response has a JSON payload with a `data` field containing an array of user-information elements.
+      <query>
+        <param name="id" optional="1">
+          User ID. Multiple user IDs can be specified. Limit: 100.
+        </param>
+        <param name="login" optional="1">
+          User login name. Multiple login names can be specified. Limit: 100.
+        </param>
+      </query>
+      <response commonref="user" />
+    </endpoint>
+    <endpoint name="UpdateUser" scope="user:edit" method="Put" path="users">
+      Updates the description of a user specified by the bearer token. Note that the description parameter is optional should other updatable parameters become available in the future. If the description parameter is not provided, no update will occur and the current user data is returned.
+      <query>
+        <param name="description">
+          User's account description
+        </param>
+      </query>
+      <response commonref="user" />
+    </endpoint>
+    <endpoint name="GetUsersFollows" path="users/follows">
+      Gets information on follow relationships between two Twitch users. This can return information like “who is qotrok following,” “who is following qotrok,” or “is user X following user Y.” Information returned is sorted in order, most recent follow first.
+
+      At minimum, `from_id` or `to_id` must be provided for a query to be valid.
+      <query>
+        <param name="from_id" optional="1">
+          User ID. The request returns information about users who are being followed by the `from_id` user.
+        </param>
+        <param name="to_id" optional="1">
+          User ID. The request returns information about users who are following the `to_id` user.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="followed_at">
+          Date and time when the `from_id` user followed the `to_id` user.
+        </param>
+        <param name="from_id">
+          ID of the user following the `to_id` user.
+        </param>
+        <param name="from_login">
+          Login of the user following the `to_id` user.
+        </param>
+        <param name="from_name">
+          Display name corresponding to `from_id`.
+        </param>
+        <param name="to_id">
+          ID of the user being followed by the `from_id` user.
+        </param>
+        <param name="to_login">
+          Login of the user being followed by the `from_id` user.
+        </param>
+        <param name="to_name">
+          Display name corresponding to `to_id`.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="GetUserBlockList" scope="user:read:blocked_users" path="users/blocks">
+      Gets a specified user's block list. The list is sorted by when the block occurred in descending order (i.e. most recent block first).
+      <query>
+        <param name="broadcaster_id">
+          User ID for a Twitch user.
+        </param>
+        <param name="first" type="int" optional="1">
+          Maximum number of objects to return. Maximum: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the pagination response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="user_id">
+          User ID of the blocked user.
+        </param>
+        <param name="user_login">
+          Login of the blocked user.
+        </param>
+        <param name="display_name">
+          Display name of the blocked user.
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="BlockUser" scope="user:manage:blocked_users" method="Put" path="users/blocks">
+      Blocks the specified user on behalf of the authenticated user.
+      <query>
+        <param name="target_user_id">
+          User ID of the user to be blocked.
+        </param>
+        <param name="source_context" optional="1">
+          Source context for blocking the user. Valid values: `"chat"`, `"whisper"`.
+        </param>
+        <param name="reason" optional="1">
+          Reason for blocking the user. Valid values: `"spam"`, `"harassment"`, or `"other"`.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="UnblockUser" scope="user:manage:blocked_users" method="Delete" path="users/blocks">
+      Unblocks the specified user on behalf of the authenticated user.
+      <query>
+        <param name="target_user_id">
+          User ID of the user to be unblocked.
+        </param>
+      </query>
+      <nullresponse />
+    </endpoint>
+    <endpoint name="GetUserExtensions" scope="user:read:broadcast" path="users/extensions/list">
+      Gets a list of all extensions (both active and inactive) for a specified user, identified by a Bearer token.
+      <response>
+        <param name="id">
+          ID of the extension.
+        </param>
+        <param name="name">
+          Name of the extension.
+        </param>
+        <param name="version">
+          Version of the extension.
+        </param>
+        <param name="can_activate" type="bool">
+          Indicates whether the extension is configured such that it can be activated.
+        </param>
+        <param name="type" array="1">
+          Types for which the extension can be activated. Valid values: `"component"`, `"mobile"`, `"panel"`, `"overlay"`.
+        </param>
+      </response>
+    </endpoint>
+
+    <!-- TODO: GetUserActiveExtensions, UpdateUserExtensions -->
+  </collection>
+
+  <collection name="videos">
+    <endpoint name="GetVideos" path="videos">
+      Gets video information by one or more video IDs, user ID, or game ID. For lookup by user or game, several filters are available that can be specified as query parameters.
+
+      Each request must specify one or more video `id`s, one `user_id`, or one `game_id`. Other optional parameters can be used if the request specifies a `user_id` or `game_id`, not a video `id`.
+      <query>
+        <param name="id" optional="1">
+          ID of the video being queried. Limit: 100. If this is specified, you cannot use any of the optional query parameters below.
+        </param>
+        <param name="user_id" optional="1">
+          ID of the user who owns the video. Limit 1.
+        </param>
+        <param name="game_id" optional="1">
+          ID of the game the video is of. Limit 1.
+        </param>
+        <param name="language" optional="1">
+          Language of the video being queried. Limit: 1. A language value must be either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="period" optional="1">
+          Period during which the video was created. Valid values: `"all"`, `"day"`, `"week"`, `"month"`. Default: `"all"`.
+        </param>
+        <param name="sort" optional="1">
+          Sort order of the videos. Valid values: `"time"`, `"trending"`, `"views"`. Default: `"time"`.
+        </param>
+        <param name="type" optional="1">
+          Type of video. Valid values: `"all"`, `"upload"`, `"archive"`, `"highlight"`. Default: `"all"`.
+        </param>
+        <param name="first" optional="1">
+          Number of values to be returned when getting videos by user or game ID. Limit: 100. Default: 20.
+        </param>
+        <param name="after" optional="1">
+          Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+        <param name="before" optional="1">
+          Cursor for backward pagination: tells the server where to start fetching the next set of results, in a multi-page response. The cursor value specified here is from the `pagination` response field of a prior query.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          ID of the video.
+        </param>
+        <param name="stream_id" optional="1">
+          ID of the stream that the video originated from if the type is `"archive"`. Otherwise set to `null`.
+        </param>
+        <param name="user_id">
+          ID of the user who owns the video.
+        </param>
+        <param name="user_login">
+          Login of the user who owns the video.
+        </param>
+        <param name="user_name">
+          Display name corresponding to `user_id`.
+        </param>
+        <param name="title">
+          Title of the video.
+        </param>
+        <param name="description">
+          Description of the video.
+        </param>
+        <param name="created_at">
+          Date when the video was created.
+        </param>
+        <param name="published_at">
+          Date when the video was published.
+        </param>
+        <param name="url">
+          URL of the video.
+        </param>
+        <param name="thumbnail_url">
+          Template URL for the thumbnail of the video.
+        </param>
+        <param name="viewable">
+          Indicates whether the video is publicly viewable. Valid values: `"public"`, `"private"`.
+        </param>
+        <param name="view_count" type="int">
+          Number of times the video has been viewed.
+        </param>
+        <param name="language">
+          Language of the video. A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+        </param>
+        <param name="type">
+          Type of video. Valid values: `"upload"`, `"archive"`, `"highlight"`.
+        </param>
+        <param name="duration">
+          Length of the video.
+        </param>
+        <param name="muted_segments" type="object" array="1" optional="1">
+          Array of muted segments in the video. If there are no muted segments, the value will be `null`.
+          <param name="duration" type="int">
+            Duration of the muted segment.
+          </param>
+          <param name="offset" type="int">
+            Offset in the video at which the muted segment begins.
+          </param>
+        </param>
+      </response>
+    </endpoint>
+    <endpoint name="DeleteVideos" scope="channel:manage:videos" method="Delete" path="videos">
+      Deletes one or more videos. Videos are past broadcasts, Highlights, or uploads.
+
+      Invalid Video IDs will be ignored (i.e. IDs provided that do not have a video associated with it). If the OAuth user token does not have permission to delete even one of the valid Video IDs, no videos will be deleted and the response will return a 401.
+      <query>
+        <param name="id">
+          ID of the video(s) to be deleted. Limit: 5.
+        </param>
+      </query>
+      <response type="string" />
+    </endpoint>
+  </collection>
+
+  <collection name="whisper">
+    <endpoint name="SendWhisper" scope="user:manage:whispers" method="Post" path="whispers">
+      Sends a whisper message to the specified user.
+
+      **NOTE**: The user sending the whisper must have a verified phone number (see the **Phone Number** setting in your [Security and Privacy](https://www.twitch.tv/settings/security) settings).
+
+      **NOTE**: The API may silently drop whispers that it suspects of violating Twitch policies. (The API does not indicate that it dropped the whisper; it returns a 204 status code as if it succeeded).
+
+      **Rate Limits**: You may whisper to a maximum of 40 unique recipients per day. Within the per day limit, you may whisper a maximum of 3 whispers per second and a maximum of 100 whispers per minute.
+      <query>
+        <param name="from_user_id">
+          The ID of the user sending the whisper. This user must have a verified phone number.
+        </param>
+        <param name="to_user_id">
+          The ID of the user to receive the whisper.
+        </param>
+      </query>
+      <request>
+        <param name="message">
+          The whisper message to send. The message must not be empty.
+
+          The maximum message lengths are:
+          - 500 characters if the user you're sending the message to hasn't whispered you before.
+          - 10,000 characters if the user you're sending the message to has whispered you before.
+
+          Messages that exceed the maximum length are truncated.
+        </param>
+      </request>
+      <nullresponse />
+    </endpoint>
+  </collection>
+
+  <commonobject name="url_sizes">
+    <param name="url_1x">
+      Path to the 1x-sized image for this object.
+    </param>
+    <param name="url_2x">
+      Path to the 2x-sized image for this object.
+    </param>
+    <param name="url_4x">
+      Path to the 4x-sized image for this object.
+    </param>
+  </commonobject>
+  <commonobject name="url_sizes_and_id">
+    <param name="id">
+      ID of the image version.
+    </param>
+    <param name="image_url_1x">
+      Path to the 1x-sized image for this object.
+    </param>
+    <param name="image_url_2x">
+      Path to the 2x-sized image for this object.
+    </param>
+    <param name="image_url_4x">
+      Path to the 4x-sized image for this object.
+    </param>
+  </commonobject>
+  <commonobject name="custom_reward">
+    <param name="broadcaster_id">
+      ID of the channel the reward is for.
+    </param>
+    <param name="broadcaster_login">
+      Broadcaster's user login name.
+    </param>
+    <param name="broadcaster_name">
+      Display name of the channel the reward is for.
+    </param>
+    <param name="id">
+      ID of the reward.
+    </param>
+    <param name="image" type="object" optional="1" commonref="url_sizes">
+      Set of custom images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }, can be null if no images have been uploaded
+    </param>
+    <param name="background_color">
+      Custom background color for the reward. Format: Hex with # prefix. Example: `#00E5CB`.
+    </param>
+    <param name="is_enabled" type="bool">
+      Is the reward currently enabled, if false the reward won't show up to viewers
+    </param>
+    <param name="cost" type="int">
+      The cost of the reward.
+    </param>
+    <param name="title">
+      The title of the reward.
+    </param>
+    <param name="prompt">
+      The prompt for the viewer when they are redeeming the reward.
+    </param>
+    <param name="max_per_stream_setting" type="object">
+      Whether a maximum per stream is enabled and what the maximum is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="max_per_stream" type="int">
+        The maximum number per stream if enabled.
+      </param>
+    </param>
+    <param name="max_per_user_per_stream_setting" type="object">
+      Whether a maximum per user per stream is enabled and what the maximum is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="max_per_user_per_stream" type="int">
+        The maximum number per user per stream if enabled.
+      </param>
+    </param>
+    <param name="global_cooldown_setting" type="object">
+      Whether a cooldown is enabled and what the cooldown is.
+      <param name="is_enabled">
+        Whether this setting is enabled.
+      </param>
+      <param name="global_cooldown_seconds" type="int">
+        The cooldown in seconds if enabled.
+      </param>
+    </param>
+    <param name="is_paused" type="bool">
+      Is the reward currently paused, if true viewers can't redeem
+    </param>
+    <param name="is_in_stock" type="bool">
+      Is the reward currently in stock, if false viewers can't redeem
+    </param>
+    <param name="default_image" type="object" commonref="url_sizes">
+      Set of default images of 1x, 2x and 4x sizes for the reward { url_1x: string, url_2x: string, url_4x: string }
+    </param>
+    <param name="should_redemptions_skip_request_queue" type="bool">
+      Should redemptions be set to FULFILLED status immediately when redeemed and skip the request queue instead of the normal UNFULFILLED status.
+    </param>
+    <param name="redemptions_redeemed_current_stream" type="int" optional="1">
+      The number of redemptions redeemed during the current live stream. Counts against the max_per_stream_setting limit. Null if the broadcasters stream isn't live or max_per_stream_setting isn't enabled.
+    </param>
+    <param name="cooldown_expires_at" optional="1">
+      Timestamp of the cooldown expiration. Null if the reward isn't on cooldown.
+    </param>
+  </commonobject>
+  <commonobject name="custom_redeem">
+    <param name="broadcaster_id">
+      The id of the broadcaster that the reward belongs to.
+    </param>
+    <param name="broadcaster_login">
+      Broadcaster's user login name.
+    </param>
+    <param name="broadcaster_name">
+      The display name of the broadcaster that the reward belongs to.
+    </param>
+    <param name="id">
+      The ID of the redemption.
+    </param>
+    <param name="user_login">
+      The login of the user who redeemed the reward.
+    </param>
+    <param name="user_id">
+      The ID of the user that redeemed the reward.
+    </param>
+    <param name="user_name">
+      The display name of the user that redeemed the reward.
+    </param>
+    <param name="user_input">
+      The user input provided. Empty string if not provided.
+    </param>
+    <param name="status">
+      One of UNFULFILLED, FULFILLED or CANCELED
+    </param>
+    <param name="redeemed_at">
+      RFC3339 timestamp of when the reward was redeemed.
+    </param>
+    <param name="reward" type="object">
+      Basic information about the Custom Reward that was redeemed at the time it was redeemed.
+      <param name="id">
+        The ID of the custom reward.
+      </param>
+      <param name="title">
+        The title of the reward.
+      </param>
+      <param name="prompt">
+        The prompt text associated with the reward.
+      </param>
+      <param name="cost" type="int">
+        The cost of the reward, in channel points.
+      </param>
+    </param>
+  </commonobject>
+  <commonobject name="eventsub_transport">
+    <param name="method">
+      The transport method. Supported values: `webhook`.
+    </param>
+    <param name="callback">
+      The callback URL where the notification should be sent.
+    </param>
+    <param name="secret">
+      The secret used for verifying a signature.
+    </param>
+  </commonobject>
+  <commonobject name="poll">
+    <param name="id">
+      ID of the poll.
+    </param>
+    <param name="broadcaster_id">
+      ID of the broadcaster.
+    </param>
+    <param name="broadcaster_name">
+      Name of the broadcaster.
+    </param>
+    <param name="broadcaster_login">
+      Login of the broadcaster.
+    </param>
+    <param name="title">
+      Question displayed for the poll.
+    </param>
+    <param name="choices" type="object" array="1">
+      Array of the poll choices.
+      <param name="id">
+        ID for the choice.
+      </param>
+      <param name="title">
+        Text displayed for the choice.
+      </param>
+      <param name="votes" type="int">
+        Total number of votes received for the choice across all methods of voting.
+      </param>
+      <param name="channel_points_votes" type="int">
+        Number of votes received via Channel Points.
+      </param>
+      <param name="bits_votes" type="int">
+        Number of votes received via Bits.
+      </param>
+    </param>
+    <param name="bits_voting_enabled" type="bool">
+      Indicates if Bits can be used for voting.
+    </param>
+    <param name="bits_per_vote" type="int">
+      Number of Bits required to vote once with Bits.
+    </param>
+    <param name="channel_points_voting_enabled" type="bool">
+      Indicates if Channel Points can be used for voting.
+    </param>
+    <param name="channel_points_per_vote" type="int">
+      Number of Channel Points required to vote once with Channel Points.
+    </param>
+    <param name="status">
+      Poll status. Valid values are:
+      - `ACTIVE`: Poll is currently in progress.
+      - `COMPLETED`: Poll has reached its `ended_at` time.
+      - `TERMINATED`: Poll has been manually terminated before its `ended_at` time.
+      - `ARCHIVED`: Poll is no longer visible on the channel.
+      - `MODERATED`: Poll is no longer visible to any user on Twitch.
+      - `INVALID`: Something went wrong determining the state.
+    </param>
+    <param name="duration" type="int">
+      Total duration for the poll (in seconds).
+    </param>
+    <param name="started_at">
+      UTC timestamp for the poll's start time.
+    </param>
+    <param name="ended_at" optional="1">
+      UTC timestamp for the poll's end time. Set to `null` if the poll is active.
+    </param>
+  </commonobject>
+  <commonobject name="prediction">
+    <param name="id">
+      ID of the Prediction.
+    </param>
+    <param name="broadcaster_id">
+      ID of the broadcaster.
+    </param>
+    <param name="broadcaster_name">
+      Name of the broadcaster.
+    </param>
+    <param name="broadcaster_login">
+      Login of the broadcaster.
+    </param>
+    <param name="title">
+      Question displayed for the poll.
+    </param>
+    <param name="winning_outcome_id" optional="1">
+      ID of the winning outcome. If the status is `ACTIVE`, this is set to `null`.
+    </param>
+    <param name="choices" type="object" array="1">
+      Array of possible outcomes for the Prediction.
+      <param name="id">
+        ID for the outcome.
+      </param>
+      <param name="title">
+        Text displayed for outcome.
+      </param>
+      <param name="users" type="int">
+        Number of unique users that chose the outcome.
+      </param>
+      <param name="channel_points" type="int">
+        Number of Channel Points used for the outcome.
+      </param>
+      <param name="top_predictors" type="object" array="1" optional="1">
+        Array of users who were the top predictors. `null` if none.
+        <param name="id">
+          ID of the user.
+        </param>
+        <param name="name">
+          Display name of the user.
+        </param>
+        <param name="login">
+          Login of the user.
+        </param>
+        <param name="channel_points_used" type="int">
+          Number of Channel Points used by the user.
+        </param>
+        <param name="channel_points_won" type="int">
+          Number of Channel Points won by the user.
+        </param>
+      </param>
+      <param name="color">
+        Color for the outcome. If the number of outcomes is two, the color is BLUE for the first one and PINK for the second one. If there are more than two outcomes, the color is BLUE for all of them.
+      </param>
+    </param>
+    <param name="prediction_window" type="int">
+      Total duration for the Prediction (in seconds).
+    </param>
+    <param name="status">
+      Status of the Prediction. Valid values are:
+      - `RESOLVED`: A winning outcome has been chosen and the Channel Points have been distributed to the users who guessed the correct outcome.
+      - `ACTIVE`: The Prediction is active and viewers can make predictions.
+      - `CANCELED`: The Prediction has been canceled and the Channel Points have been refunded to participants.
+      - `LOCKED`: The Prediction has been locked and viewers can no longer make predictions.
+    </param>
+    <param name="created_at">
+      UTC timestamp for the Prediction's start time.
+    </param>
+    <param name="ended_at" optional="1">
+      UTC timestamp for when the Prediction ended. If the status is `ACTIVE`, this is set to `null`.
+    </param>
+    <param name="locked_at" optional="1">
+      UTC timestamp for when the Prediction was locked. If the status is not `LOCKED`, this is set to `null`.
+    </param>
+  </commonobject>
+  <commonobject name="schedule">
+    <param name="segments" type="object" array="1">
+      Scheduled broadcasts for this stream schedule.
+      <param name="id">
+        The ID for the scheduled broadcast.
+      </param>
+      <param name="start_time">
+        Scheduled start time for the scheduled broadcast in RFC3339 format.
+      </param>
+      <param name="end_time">
+        Scheduled end time for the scheduled broadcast in RFC3339 format.
+      </param>
+      <param name="title">
+        Title for the scheduled broadcast.
+      </param>
+      <param name="canceled_until" optional="1">
+        Used with recurring scheduled broadcasts. Specifies the date of the next recurring broadcast in RFC3339 format if one or more specific broadcasts have been deleted in the series. Set to `null` otherwise.
+      </param>
+      <param name="category" type="object" optional="1">
+        The category for the scheduled broadcast. Set to `null` if no category has been specified.
+        <param name="id">
+          Game/category ID.
+        </param>
+        <param name="name">
+          Game/category name.
+        </param>
+      </param>
+      <param name="is_recurring" type="bool">
+        Indicates if the scheduled broadcast is recurring weekly.
+      </param>
+    </param>
+    <param name="broadcaster_id">
+      User ID of the broadcaster.
+    </param>
+    <param name="broadcaster_login">
+      Login of the broadcaster.
+    </param>
+    <param name="broadcaster_name">
+      Display name of the broadcaster.
+    </param>
+    <param name="vacation" type="object" optional="1">
+      If Vacation Mode is enabled, this includes start and end dates for the vacation. If Vacation Mode is disabled, value is set to `null`.
+      <param name="start_time">
+        Start time for vacation specified in RFC3339 format.
+      </param>
+      <param name="end_time">
+        End time for vacation specified in RFC3339 format.
+      </param>
+    </param>
+  </commonobject>
+  <commonobject name="soundtrack_track">
+    <param name="album" type="object">
+      The album that includes the track.
+      <param name="id">
+        The album's ASIN (Amazon Standard Identification Number).
+      </param>
+      <param name="image_url">
+        A URL to the album's cover art.
+      </param>
+      <param name="name">
+        The album's name. If the album contains explicit content, the name will contain **[Explicit]** in the string. For example, Let It Die [Explicit].
+      </param>
+    </param>
+    <param name="artists" type="object" array="1">
+      The artists included on the track.
+      <param name="id">
+        The artist's ASIN (Amazon Standard Identification Number).
+      </param>
+      <param name="name">
+        The artist's name. This can be the band's name or the solo artist's name.
+      </param>
+      <param name="creator_channel_id">
+        The ID of the Twitch user that created the track. Is empty if a Twitch user didn't create the track.
+      </param>
+    </param>
+    <param name="id">
+      The track's ASIN (Amazon Standard Identification Number).
+    </param>
+    <param name="duration" type="int">
+      The duration of the track, in seconds.
+    </param>
+    <param name="title">
+      The track's title. If the track contains explicit content, the title will contain **[Explicit]** in the string. For example, Let It Die [Explicit].
+    </param>
+  </commonobject>
+  <commonobject name="stream">
+    <param name="id">
+      Stream ID.
+    </param>
+    <param name="user_id">
+      ID of the user who is streaming.
+    </param>
+    <param name="user_login">
+      Login of the user who is streaming.
+    </param>
+    <param name="user_name">
+      Display name corresponding to `user_id`.
+    </param>
+    <param name="game_id">
+      ID of the game being played on the stream.
+    </param>
+    <param name="game_name">
+      Name of the game being played.
+    </param>
+    <param name="type">
+      Stream type: `"live"` or `""` (in case of error).
+    </param>
+    <param name="title">
+      Stream title.
+    </param>
+    <param name="viewer_count" type="int">
+      Number of viewers watching the stream at the time of the query.
+    </param>
+    <param name="started_at">
+      UTC timestamp. Returns an empty string if the channel is not live.
+    </param>
+    <param name="language">
+      Stream language. A language value is either the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) two-letter code for a [supported stream language](https://help.twitch.tv/s/article/languages-on-twitch#streamlang) or “other”.
+    </param>
+    <param name="thumbnail_url">
+      Thumbnail URL of the stream. All image URLs have variable width and height. You can replace {width} and {height} with any values to get that size image.
+    </param>
+    <param name="tag_ids" array="1">
+      Tag IDs that apply to the stream. This array only contains strings when a channel is live. For all possibilities, see [List of All Tags](https://www.twitch.tv/directory/all/tags). Category Tags are not returned.
+    </param>
+    <param name="is_mature" type="bool" optional="1">
+      Indicates if the broadcaster has specified their channel contains mature content that may be inappropriate for younger audiences.
+    </param>
+  </commonobject>
+  <commonobject name="tag">
+    <param name="tag_id">
+      An ID that identifies the tag.
+    </param>
+    <param name="is_auto" type="bool">
+      A Boolean value that determines whether the tag is an automatic tag. An automatic tag is one that Twitch adds to the stream. You cannot add or remove automatic tags. The value is `true` if the tag is an automatic tag; otherwise, `false`.
+    </param>
+    <param name="localization_names" type="map">
+      A dictionary that contains the localized names of the tag. The key is in the form, &lt;locale&gt;-&lt;coutry/region&gt;. For example, us-en. The value is the localized name.
+    </param>
+    <param name="localization_descriptions" type="map">
+      A dictionary that contains the localized descriptions of the tag. The key is in the form, &lt;locale&gt;-&lt;coutry/region&gt;. For example, us-en. The value is the localized description.
+    </param>
+  </commonobject>
+  <commonobject name="user">
+    <param name="id">
+      User's ID.
+    </param>
+    <param name="login">
+      User's login name.
+    </param>
+    <param name="display_name">
+      User's display name.
+    </param>
+    <param name="type">
+      User's type: `"staff"`, `"admin"`, `"global_mod"`, or `""`.
+    </param>
+    <param name="broadcaster_type">
+      User's broadcaster type: `"partner"`, `"affiliate"`, or `""`.
+    </param>
+    <param name="description">
+      User's channel description.
+    </param>
+    <param name="profile_image_url">
+      URL of the user's profile image.
+    </param>
+    <param name="offline_image_url">
+      URL of the user's offline image.
+    </param>
+    <param name="view_count" type="int" deprecated="1">
+      Total number of views of the user's channel.
+
+      **NOTE:** This field has been deprecated. For information, see [Get Users API endpoint – “view_count” deprecation](https://discuss.dev.twitch.tv/t/get-users-api-endpoint-view-count-deprecation/37777). The response continues to include the field; however, it contains stale data. You should stop displaying this data at your earliest convenience.
+    </param>
+    <param name="email" optional="1">
+      User's verified email address. Returned if the request includes the `user:read:email` scope.
+    </param>
+    <param name="created_at">
+      Date when the user was created.
+    </param>
+  </commonobject>
+</TwitchAPI>

@@ -8,6 +8,9 @@ typedef ParsedChatMessage = {
 	/** The origin of the message. **/
 	var ?origin:String;
 
+	/** The originating user of the message. Will generally be `null` if the message originates from the server. **/
+	var ?user:String;
+
 	/** The destination of the message. **/
 	var ?destination:String;
 
@@ -26,6 +29,9 @@ typedef ParsedChatMessageWith<T> = {
 
 	/** The origin of the message. **/
 	var ?origin:String;
+
+	/** The originating user of the message. Will generally be `null` if the message originates from the server. **/
+	var ?user:String;
 
 	/** The destination of the message. **/
 	var ?destination:String;
@@ -147,7 +153,7 @@ typedef NoticeTags = {
 }
 
 /** The Twitch IRC server sends this message after a user posts a message to the chat room. **/
-typedef PrivmsgTags = {
+typedef PrivMsgTags = {
 	/**
 		Contains metadata related to the chat badges in the `badges` tag.
 
@@ -711,7 +717,7 @@ enum ChatMessageType {
 		Your client receives this message from the Twitch IRC server when a user posts a chat message in the chat room.
 		See [Sending and receiving chat messages](https://dev.twitch.tv/docs/irc/send-receive-messages).
 	**/
-	Privmsg(msg:ParsedChatMessageWith<PrivmsgTags>);
+	PrivMsg(msg:ParsedChatMessageWith<PrivMsgTags>);
 
 	/**
 		Your client receives this message from the Twitch IRC server when all messages are removed from the chat room,
