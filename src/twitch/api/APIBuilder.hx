@@ -205,7 +205,7 @@ class APIBuilder {
 			var name = param.get("name");
 			if (name == null)
 				Context.error('Missing parameter name in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
-			else if (!~/[a-zA-Z_][a-zA-Z0-9_]+/.match(name))
+			else if (!~/^[a-zA-Z_][a-zA-Z0-9_]+$/.match(name))
 				Context.error('Invalid parameter name $name in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
 
 			var optional = truthy.contains(param.get("optional"));
@@ -235,7 +235,7 @@ class APIBuilder {
 			if (truthy.contains(param.get("deprecated"))) {
 				if (field.meta == null)
 					field.meta = [];
-				field.meta.push({name: "deprecated", pos: Context.currentPos()});
+				field.meta.push({name: ":deprecated", pos: Context.currentPos()});
 			}
 
 			for (member in param)
