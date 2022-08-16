@@ -2536,7 +2536,7 @@
         <param name="id">
           Game/category ID.
         </param>
-        <param name="name=">
+        <param name="name">
           Game/category name.
         </param>
         <param name="box_art_url">
