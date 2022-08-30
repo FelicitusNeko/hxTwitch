@@ -188,13 +188,17 @@ class Client {
 		// }
 
 		req.addHeader("Client-Id", _clientId);
-		// TODO: implement authType
-		if (_oauthKey != null)
-			req.addHeader("Authorization", 'Bearer $_oauthKey');
-		else if (_appToken != null)
-			req.addHeader("Authorization", 'Bearer $_appToken');
-		else
+		var authKey = switch(authType) {
+			case OAuthFirst: _oauthKey == null ? _appToken : _oauthKey;
+			case AppAccessFirst: _appToken == null ? _oauthKey : _appToken;
+			case OAuth: _oauthKey;
+			case AppAccess: _appToken;
+		}
+
+		if (authKey == null) 
 			throw new Exception("No authentication key provided");
+
+		req.addHeader("Authorization", 'Bearer $authKey');
 
 		if (query != null) {
 			for (k => v in query) {
