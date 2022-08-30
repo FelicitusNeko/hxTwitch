@@ -117,9 +117,12 @@ class APIBuilder {
 										type: buildAnonymous(root, node)
 									});
 								case "response":
-                  // This is pretty much 100% here for DeleteVideos, which not only doesn't return 204, but returns an array of strings without any structure
-									var rkind = (node.get("type") == "string") ? (macro:Array<String>) : buildAnonymous(root, node,
-										!falsy.contains(node.get("array")));
+									var rkind = switch (node.get("type")) {
+										case "string": (macro:Array<String>);
+										case "ical": (macro:String);
+										case "object" | null: buildAnonymous(root, node, !falsy.contains(node.get("array")));
+										case x: Context.error('Unknown response type $x in $collection.$epName', Context.currentPos());
+									};
 									funcdef.ret = TPath({
 										name: "APIResponse",
 										params: [TPType(rkind)],
