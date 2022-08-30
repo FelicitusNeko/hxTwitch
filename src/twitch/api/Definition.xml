@@ -2465,9 +2465,19 @@
       </query>
       <response commonref="schedule" />
     </endpoint>
+    <endpoint name="GetChanneliCalendar" path="schedule/icalendar">
+      Gets all scheduled broadcasts from a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule) as an [iCalendar](https://datatracker.ietf.org/doc/html/rfc5545).
+      <query>
+        <param name="broadcaster_id">
+          User ID of the broadcaster who owns the channel streaming schedule.
 
-    <!-- TODO: GetChanneliCalendar -->
-
+          Maximum: 1
+        </param>
+      </query>
+      <response type="ical">
+        iCalendar data is returned according to [RFC5545](https://datatracker.ietf.org/doc/html/rfc5545). The expected MIME type is `text/calendar`.
+      </response>
+    </endpoint>
     <endpoint name="UpdateChannelStreamSchedule" scope="channel:manage:schedule" method="Patch" path="schedule/settings">
       Update the settings for a channel's [stream schedule](https://help.twitch.tv/s/article/channel-page-setup#Schedule). This can be used for setting vacation details.
       <query>
