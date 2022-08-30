@@ -144,7 +144,7 @@ class APIBuilder {
 						funcdef.ret = TPath({name: "APIResponse", params: [TPType(macro:Void)], pack: []});
 					// Anything else must specify explicitly with <nullresponse /> or else it's an error
 					else
-						Context.error('No return type for endpoint $collection.$endpoint', Context.currentPos());
+						Context.error('No return type for endpoint $collection.$epName', Context.currentPos());
 				}
 
 				if (hasBody) {
