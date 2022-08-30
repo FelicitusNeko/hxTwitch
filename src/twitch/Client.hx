@@ -1,5 +1,6 @@
 package twitch;
 
+import haxe.exceptions.NotImplementedException;
 import haxe.Exception;
 import haxe.Http;
 import haxe.http.HttpMethod;
@@ -48,6 +49,9 @@ enum AuthenticationType {
 
 	/** Forces the use of the app access token. **/
 	AppAccess;
+
+	/** Forces the use of JSON web token. **/
+	JWT;
 }
 
 /** The Twitch API, PubSub, and Chat client. **/
@@ -193,6 +197,7 @@ class Client {
 			case AppAccessFirst: _appToken == null ? _oauthKey : _appToken;
 			case OAuth: _oauthKey;
 			case AppAccess: _appToken;
+			case JWT: throw new NotImplementedException("JWT authentication not yet implemented");
 		}
 
 		if (authKey == null) 
