@@ -250,6 +250,10 @@ class APIBuilder {
 
 			retval.push(field);
 		}
+
+		if (retval.length == 0)
+			Context.error('Anonymous structure without parameters in ${parent.nodeName} ${parent.get("name")}', Context.currentPos());
+
 		return responseArray ? TPath({name: "Array", params: [TPType(TAnonymous(retval))], pack: []}) : TAnonymous(retval);
 	}
 }
