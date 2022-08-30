@@ -377,6 +377,7 @@
           Stream delay in seconds. Stream delay is a Twitch Partner feature; trying to set this value for other account types will return a 400 error.
         </param>
       </request>
+      <nullresponse />
     </endpoint>
     <endpoint name="GetChannelEditors" scope="channel:read:editors" path="channels/editors">
       Gets a list of users who have editor permissions for a specific channel.
@@ -539,6 +540,70 @@
         </param>
       </request>
       <response commonref="custom_redeem" />
+    </endpoint>
+  </collection>
+
+  <collection name="charity">
+    <endpoint name="GetCharityCampaign" scope="channel:read:charity" path="charity/campaigns" beta="1">
+      Gets information about the charity campaign that a broadcaster is running, such as their fundraising goal and the amount that’s been donated so far.
+
+      To receive events as donations occur, use the [channel.charity_campaign.donate](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcharity_campaigndonate) subscription type.
+      <query>
+        <param name="broadcaster_id">
+          The ID of the broadcaster that's actively running a charity campaign.
+        </param>
+      </query>
+      <response>
+        <param name="id">
+          An ID that uniquely identifies the charity campaign.
+        </param>
+        <param name="broadcaster_id">
+          An ID that uniquely identifies the broadcaster that's running the campaign.
+        </param>
+        <param name="broadcaster_login">
+          The broadcaster's login name.
+        </param>
+        <param name="broadcaster_name">
+          The broadcaster's display name.
+        </param>
+        <param name="charity_name">
+          The charity's name.
+        </param>
+        <param name="charity_description">
+          A description of the charity.
+        </param>
+        <param name="charity_logo">
+          A URL to an image of the charity's logo. The image's type is PNG and its size is 100px X 100px.
+        </param>
+        <param name="current_amount" type="object">
+          An object that contains the current amount of donations that the campaign has received.
+          <param name="value" type="int">
+            The monetary amount. The amount is specified in the currency's minor unit. For example, the minor units for USD is cents, so if the amount is $5.50 USD, `value` is set to 550.
+          </param>
+          <param name="decimal_places" type="int">
+            The number of decimal places used by the currency. For example, USD uses two decimal places. Use this number to translate `value` from minor units to major units by using the formula:
+
+            `value / 10^decimal_places`
+          </param>
+          <param name="currency">
+            The ISO-4217 three-letter currency code that identifies the type of currency in `value`.
+          </param>
+        </param>
+        <param name="target_amount" type="object">
+          An object that contains the amount of money that the campaign is trying to raise. This field may be **null** if the broadcaster has not defined a target goal.
+          <param name="value" type="int">
+            The monetary amount. The amount is specified in the currency's minor unit. For example, the minor units for USD is cents, so if the amount is $5.50 USD, `value` is set to 550.
+          </param>
+          <param name="decimal_places" type="int">
+            The number of decimal places used by the currency. For example, USD uses two decimal places. Use this number to translate `value` from minor units to major units by using the formula:
+
+            `value / 10^decimal_places`
+          </param>
+          <param name="currency">
+            The ISO-4217 three-letter currency code that identifies the type of currency in `value`.
+          </param>
+        </param>
+      </response>
     </endpoint>
   </collection>
 
@@ -2362,7 +2427,7 @@
 
       **Rate Limit**: The limit is 10 requests within a 10-minute window.
       <request>
-        <param id="broadcaster_id">
+        <param name="broadcaster_id">
           The ID of the broadcaster that sent the raiding party.
         </param>
       </request>
